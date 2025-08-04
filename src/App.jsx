@@ -6,6 +6,7 @@ import Menu from "./components/Menu";
 import Services from "./components/Services";
 import MySkills from "./components/MySkills";
 import Contributions from "./components/Contributions";  // no .jsx extension needed
+import SplinePage from "./components/SplinePage"
 import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
@@ -30,9 +31,7 @@ const App = () => {
       <ScrollProgress />
 
       <div className="bg-primary overflow-hidden">
-        <div id="stars" />
-        <div id="stars2" />
-        <div id="stars3" />
+        
 
         {/* Hero section */}
         <div className="h-[100vh]">
@@ -48,7 +47,7 @@ const App = () => {
           <Services />
           <MySkills />
         </div>
-
+        <SplinePage />
         {/* Portfolio Works */}
         <Works />
 
