@@ -8,7 +8,7 @@ import {
 
 import taskpora from "../../src/assets/projects/taskpora.png";
 import doct from "../../src/assets/projects/doct.png";
-import zapcart from "../../src/assets/projects/zapcart.png";
+import zapcart from "../../src/assets/projects/Zapcart.png";
 import fashionova from "../../src/assets/projects/fashionova.png";
 import mindcore from "../../src/assets/projects/mindcore.png";
 import neuronest from "../../src/assets/projects/neuronest.png";  
