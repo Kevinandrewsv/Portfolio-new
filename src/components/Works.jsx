@@ -9,7 +9,7 @@ import { BsLink45Deg } from "react-icons/bs";
 import { BiCodeAlt } from "react-icons/bi";
 import { TfiServer } from "react-icons/tfi";
 
-// Icons for Technologies
+// React-Icons for Technologies
 import {
   FaReact,
   FaNodeJs,
@@ -28,6 +28,8 @@ import {
   SiExpress,
   SiTypescript,
   SiJavascript,
+  SiAmazonaws,
+  SiPostgresql,
 } from "react-icons/si";
 
 import { styles } from "../style";
@@ -44,15 +46,20 @@ export default function WorksSection() {
       viewport={{ once: true, amount: 0.15 }}
       className={`${styles.padding} pt-24 pb-12 mx-auto max-w-7xl`}
     >
-      <motion.div variants={fadeIn("", "", 0.1, 1)} className="text-center mb-16">
+      <motion.div
+        variants={fadeIn("", "", 0.1, 1)}
+        className="text-center mb-16"
+      >
         <h2
           className={`${styles.sectionHeadText} bg-gradient-to-r from-[#eb3b91] to-[#6773de] bg-clip-text text-transparent`}
         >
           My Work
         </h2>
         <p className="mt-4 text-gray-400 text-[17px] max-w-3xl mx-auto leading-[30px]">
-          The following projects showcase my skills through real-world examples. Each is briefly described with links to code
-          repositories and live demos, reflecting my ability to solve complex problems and work with diverse technologies.
+          The following projects showcase my skills through real-world examples.
+          Each is briefly described with links to code repositories and live
+          demos, reflecting my ability to solve complex problems and work with
+          diverse technologies.
         </p>
       </motion.div>
 
@@ -65,30 +72,42 @@ export default function WorksSection() {
   );
 }
 
-const TechIcon = ({ name, color }) => {
-  const iconSize = 24;
-  const iconProps = { size: iconSize, className: color || "text-gray-400" };
+// Always render a React-Icon based on tag.name
+const TechIcon = ({ name }) => {
+  const size = 24;
+  const classes = "text-gray-400 transition-transform hover:scale-125";
+  const mapKey = name.toLowerCase().replace(/[\s.-]/g, "");
+
   const iconMap = {
-    react: <FaReact {...iconProps} />,
-    nodejs: <FaNodeJs {...iconProps} />,
-    mongodb: <SiMongodb {...iconProps} />,
-    tailwind: <SiTailwindcss {...iconProps} />,
-    firebase: <SiFirebase {...iconProps} />,
-    nextjs: <SiNextdotjs {...iconProps} />,
-    redux: <SiRedux {...iconProps} />,
-    vite: <SiVite {...iconProps} />,
-    express: <SiExpress {...iconProps} />,
-    typescript: <SiTypescript {...iconProps} />,
-    javascript: <SiJavascript {...iconProps} />,
-    html5: <FaHtml5 {...iconProps} />,
-    css3: <FaCss3Alt {...iconProps} />,
-    git: <FaGitAlt {...iconProps} />,
-    figma: <FaFigma {...iconProps} />,
+    react: <FaReact size={size} className={classes} />,
+    reactjs: <FaReact size={size} className={classes} />,
+    nodejs: <FaNodeJs size={size} className={classes} />,
+    mongodb: <SiMongodb size={size} className={classes} />,
+    tailwindcss: <SiTailwindcss size={size} className={classes} />,
+    tailwind: <SiTailwindcss size={size} className={classes} />,
+    firebase: <SiFirebase size={size} className={classes} />,
+    nextjs: <SiNextdotjs size={size} className={classes} />,
+    redux: <SiRedux size={size} className={classes} />,
+    vite: <SiVite size={size} className={classes} />,
+    expressjs: <SiExpress size={size} className={classes} />,
+    express: <SiExpress size={size} className={classes} />,
+    typescript: <SiTypescript size={size} className={classes} />,
+    ts: <SiTypescript size={size} className={classes} />,
+    javascript: <SiJavascript size={size} className={classes} />,
+    html5: <FaHtml5 size={size} className={classes} />,
+    css3: <FaCss3Alt size={size} className={classes} />,
+    git: <FaGitAlt size={size} className={classes} />,
+    figma: <FaFigma size={size} className={classes} />,
+    aws: <SiAmazonaws size={size} className={classes} />,
+    amazonwebservices: <SiAmazonaws size={size} className={classes} />,
+    postgresql: <SiPostgresql size={size} className={classes} />,
   };
-  const normalized = name.toLowerCase().replace(/[\s.-]/g, "");
-  const icon = iconMap[normalized];
-  if (!icon) return <span className={`text-xs font-semibold ${color || "text-pink-400"}`}>#{name}</span>;
-  return <div title={name} className="transition-transform hover:scale-125">{icon}</div>;
+
+  return (
+    iconMap[mapKey] || (
+      <span className="text-xs font-semibold text-pink-400">#{name}</span>
+    )
+  );
 };
 
 const ProjectCard = ({
@@ -106,16 +125,13 @@ const ProjectCard = ({
   const handleMouseMove = (e) => {
     const el = wrapperRef.current;
     if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const rotY = ((x - cx) / cx) * 10;
-    const rotX = ((y - cy) / cy) * -10;
+    const { left, width, height } = el.getBoundingClientRect();
+    const x = e.clientX - left;
+    const y = e.clientY - el.getBoundingClientRect().top;
+    const rotY = ((x - width / 2) / (width / 2)) * 10;
+    const rotX = ((y - height / 2) / (height / 2)) * -10;
     el.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
   };
-
   const handleMouseLeave = () => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -124,28 +140,15 @@ const ProjectCard = ({
 
   return (
     <motion.div variants={fadeIn("up", "spring", index * 0.3, 0.8)}>
-      {/* Gradient border + glow on hover + 3D tilt */}
       <div
         ref={wrapperRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="
-          group
-          rounded-2xl
-          p-[1px]
-          bg-gradient-to-br from-[#eb3b91]/60 to-[#6773de]/60
-          overflow-hidden
-          transition-all duration-300 ease-out
-          hover:shadow-[0_0_8px_rgba(235,59,145,0.7),0_0_16px_rgba(235,59,145,0.5),0_0_24px_rgba(103,115,222,0.7),0_0_32px_rgba(103,115,222,0.4)]
-        "
+        className="group rounded-2xl p-[1px] bg-gradient-to-br from-[#eb3b91]/60 to-[#6773de]/60 overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_8px_rgba(235,59,145,0.7),0_0_16px_rgba(235,59,145,0.5),0_0_24px_rgba(103,115,222,0.7),0_0_32px_rgba(103,115,222,0.4)]"
         style={{ transformStyle: "preserve-3d" }}
       >
-        {/* Inner card */}
         <div className="relative w-full h-[450px] bg-[#030014] rounded-2xl">
-          {/* Hover aura */}
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#eb3b91]/[0.15] to-[#6773de]/[0.15] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-          {/* Main content */}
           <div
             className="absolute inset-[1px] bg-[#030014] rounded-2xl flex flex-col justify-between p-5"
             style={{ transform: "translateZ(20px)" }}
@@ -160,22 +163,26 @@ const ProjectCard = ({
                 />
               </div>
               <h3 className="text-white font-bold text-2xl">{name}</h3>
-              <p className="mt-2 text-gray-400 text-sm line-clamp-2">{description}</p>
+              <p className="mt-2 text-gray-400 text-sm line-clamp-2">
+                {description}
+              </p>
             </div>
             <div className="flex flex-wrap gap-4 items-center mt-4">
               {tags.map((t) => (
-                <TechIcon key={t.name} name={t.name} color={t.color} />
+                <TechIcon key={t.name} name={t.name} />
               ))}
             </div>
           </div>
-
-          {/* Link overlay */}
           <div
             className="absolute inset-0 flex flex-col justify-center items-center gap-4 p-5 bg-black/60 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl"
             style={{ transform: "translateZ(60px)" }}
           >
-            <h3 className="text-white font-bold text-2xl text-center">{name}</h3>
-            <p className="text-gray-300 text-sm max-w-sm text-center">{description}</p>
+            <h3 className="text-white font-bold text-2xl text-center">
+              {name}
+            </h3>
+            <p className="text-gray-300 text-sm max-w-sm text-center">
+              {description}
+            </p>
             <div className="mt-4 flex gap-4">
               {live_link && (
                 <a
