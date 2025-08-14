@@ -1,12 +1,13 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
+import InteractiveBackground from "./components/InteractiveBackground"; // <-- new
 import About from "./components/About";
 import Works from "./components/Works";
 import Menu from "./components/Menu";
 import Services from "./components/Services";
 import MySkills from "./components/MySkills";
-import Contributions from "./components/Contributions";  // no .jsx extension needed
-import SplinePage from "./components/SplinePage"
+import Contributions from "./components/Contributions";
+import SplinePage from "./components/SplinePage";
 import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
@@ -18,7 +19,6 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate an asynchronous operation
     const timer = setTimeout(() => setLoading(false), 2000);
     return () => clearTimeout(timer);
   }, []);
@@ -27,43 +27,43 @@ const App = () => {
 
   return (
     <>
-      {/* scroll progress indicator */}
       <ScrollProgress />
+      {/* make this relative so our absolute background sits inside */}
+      <div className="bg-primary overflow-hidden relative">
+        {/* interactive background — place it BEFORE content so it's behind */}
+        <InteractiveBackground particleCount={28} />
 
-      <div className="bg-primary overflow-hidden">
-        
+        {/* make your content stack above background: set z-index if needed */}
+        <div className="h-[100vh] relative overflow-visible"> {/* hero container is positioned */}
+  <Menu />
+  <About />
 
-        {/* Hero section */}
-        <div className="h-[100vh]">
-          <Menu />
-          <About />
+  {/* Scroll button placed inside the hero so it is positioned relative to this container */}
+  <a
+    href="#services"
+    aria-label="Scroll to services"
+    className="scroll-btn"
+  />
+</div>
+
+          
+
+          <div className="pt-10">
+            <Services />
+            <MySkills />
+          </div>
+          <SplinePage />
+          <Works />
+          <section className="pt-16">
+            <Contributions />
+          </section>
+          <Contact />
+
+          <h1 className={`${styles.heroSubText} text-center py-4`}>
+            Made by Kevin Andrews
+          </h1>
         </div>
-
-        {/* Optional anchor for “scroll to top” */}
-        <a className="scroll-btn" />
-
-        {/* Services & Skills */}
-        <div className="pt-10">
-          <Services />
-          <MySkills />
-        </div>
-        <SplinePage />
-        {/* Portfolio Works */}
-        <Works />
-
-        {/* ← Your new contributions graph section */}
-        <section className="pt-16">
-          <Contributions />
-        </section>
-
-        {/* Contact */}
-        <Contact />
-
-        {/* Footer */}
-        <h1 className={`${styles.heroSubText} text-center py-4`}>
-          Made by Kevin Andrews
-        </h1>
-      </div>
+      
     </>
   );
 };

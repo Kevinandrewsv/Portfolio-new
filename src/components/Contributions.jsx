@@ -1,7 +1,6 @@
 // src/components/Contributions.jsx
 import React, { useState } from 'react';
 import GitHubCalendar from 'react-github-calendar';
-import SectionWrapper from '../hoc/SectionWrapper';
 
 const Contributions = () => {
   const [totalContributions, setTotalContributions] = useState(0);
@@ -11,7 +10,11 @@ const Contributions = () => {
   };
 
   return (
-    <div className="w-full py-20 px-4 flex flex-col items-center">
+    <section
+      id="contributions"
+      className="w-full py-20 px-4 flex flex-col items-center
+                 sm:px-16 max-w-7xl mx-auto scroll-mt-[80px] lg:scroll-mt-[96px]"
+    >
       <h2
         className="text-4xl font-extrabold mb-12
                    bg-gradient-to-r from-[#eb3b91] to-[#6773de]
@@ -53,14 +56,14 @@ const Contributions = () => {
 
           /* marquee animation sliding the SVG inner calendar left ↔ right */
           @keyframes slideCalendar {
-            0%   { transform: translateX(   0 ); }
+            0%   { transform: translateX(0); }
             50%  { transform: translateX(calc(-100% + 100vw)); }
-            100% { transform: translateX(   0 ); }
+            100% { transform: translateX(0); }
           }
 
           /* apply animation to the inner SVG wrapper */
           .contrib-calendar > div {
-            display: inline-block;           /* shrink to SVG width */
+            display: inline-block;
             animation: slideCalendar 30s linear infinite;
           }
         `}</style>
@@ -108,8 +111,8 @@ const Contributions = () => {
           </span>
         </p>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default SectionWrapper(Contributions, 'contributions');
+export default Contributions;

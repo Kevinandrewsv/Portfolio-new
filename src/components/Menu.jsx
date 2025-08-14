@@ -1,18 +1,12 @@
 // src/components/Menu.jsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { fadeIn } from "../utils/motion";
-import {
-  FiHome,
-  FiTool,
-  FiFolder,
-  FiCode,
-  FiMail,
-  FiMenu,
-  FiX,
-} from "react-icons/fi";
+import { FiMenu, FiX } from "react-icons/fi";
 
-// 1) StarWrapper now includes scroll-mt so scrollIntoView accounts for nav height
+/**
+ * StarWrapper HOC (keeps your scroll-mt adjustments)
+ */
 const StarWrapper = (Component, idName) =>
   function HOC() {
     return (
@@ -37,6 +31,8 @@ const StarWrapper = (Component, idName) =>
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [active, setActive] = useState("Home");
+  const [isHover, setIsHover] = useState(false);
+  const navRef = useRef(null);
 
   const activeStyles = {
     Home:          "bg-indigo-500 bg-opacity-80 text-white font-semibold",
@@ -55,34 +51,72 @@ const Menu = () => {
   };
 
   const navItems = [
-    { label: "Home",          icon: <FiHome size={20} /> },
-    { label: "Skills",        icon: <FiTool size={20} /> },
-    { label: "Projects",      icon: <FiFolder size={20} /> },
-    { label: "Contributions", icon: <FiCode size={20} /> },
-    { label: "Contact",       icon: <FiMail size={20} /> },
+    { label: "Home" },
+    { label: "Skills" },
+    { label: "Projects" },
+    { label: "Contributions" },
+    { label: "Contact" },
   ];
 
+  // compute and perform scroll while accounting for the fixed nav height
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (!el) return;
+
+    const doScroll = () => {
+      const elTop = el.getBoundingClientRect().top + window.pageYOffset;
+      const navEl = document.querySelector(".site-nav");
+      const navHeight = navEl ? Math.round(navEl.getBoundingClientRect().height) : 0;
+      const extraGap = 8; // small gap below the nav
+      const targetY = Math.max(elTop - navHeight - extraGap, 0);
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    };
+
+    if (isOpen) {
+      setIsOpen(false);
+      setTimeout(doScroll, 120);
+    } else {
+      doScroll();
+    }
   };
 
   const handleClick = (label) => {
     setActive(label);
+
     if (label === "Home") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      if (isOpen) {
+        setIsOpen(false);
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 120);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     } else {
       scrollToSection(label.toLowerCase());
     }
-    setIsOpen(false);
   };
 
   return (
     <motion.div variants={fadeIn("top", "spring", 0.5, 2)}>
-      <div className="fixed top-0 left-0 w-full z-50 flex justify-center py-4">
+      {/* Full-screen blur overlay (blurs content behind nav). z ordering: overlay below nav but above page content. */}
+      <div
+        aria-hidden
+        className={`fixed inset-0 transition-all duration-300 pointer-events-none
+          ${isOpen ? "backdrop-blur-xl bg-black/30 pointer-events-auto z-30" : isHover ? "backdrop-blur-lg bg-black/10 z-20" : "backdrop-blur-0 bg-transparent z-0"}
+        `}
+      />
+
+      {/* NOTE: .site-nav used to measure nav height for offset calculations */}
+      <div
+        className="fixed top-0 left-0 w-full z-40 flex justify-center py-4 site-nav"
+        ref={navRef}
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
+      >
         {/* Mobile toggle */}
         <button
           onClick={() => setIsOpen((o) => !o)}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
           className="absolute left-6 lg:hidden z-50 text-gray-200 hover:text-gray-400"
         >
           {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
@@ -91,18 +125,18 @@ const Menu = () => {
         {/* Nav items */}
         <ul
           className={`
-            bg-white bg-opacity-10 backdrop-blur-md
-            border border-white/20 shadow-lg shadow-black/40
+             bg-opacity-10 backdrop-blur-md
+            border border-white/10 shadow-lg shadow-black/40
             rounded-full px-6 py-2
             flex flex-col lg:flex-row items-center
             space-y-4 lg:space-y-0 lg:space-x-8
             text-gray-100
             transition-transform duration-300
-            relative z-40
+            relative z-50
             ${isOpen ? "translate-y-0" : "-translate-y-full"} lg:translate-y-0
           `}
         >
-          {navItems.map(({ label, icon }) => {
+          {navItems.map(({ label }) => {
             const isActive = active === label;
             return (
               <li
@@ -119,16 +153,10 @@ const Menu = () => {
                   />
                 )}
                 <div
-                  className={`
-                    flex items-center gap-2 px-3 py-1 rounded-full transition
-                    ${
-                      isActive
-                        ? activeStyles[label]
-                        : "hover:bg-white hover:bg-opacity-10"
-                    }
+                  className={`flex items-center gap-2 px-3 py-1 rounded-full transition
+                    ${isActive ? activeStyles[label] : "hover:bg-white hover:bg-opacity-10"}
                   `}
                 >
-                  {icon}
                   <span>{label}</span>
                 </div>
               </li>

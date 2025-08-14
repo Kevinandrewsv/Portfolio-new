@@ -46,22 +46,25 @@ export default function WorksSection() {
       viewport={{ once: true, amount: 0.15 }}
       className={`${styles.padding} pt-24 pb-12 mx-auto max-w-7xl`}
     >
-      <motion.div
-        variants={fadeIn("", "", 0.1, 1)}
-        className="text-center mb-16"
+      {/* Banner (matches your "About Me" style exactly) */}
+      <section
+        className="w-full py-12 md:py-2 relative overflow-hidden flex justify-center items-center"
       >
-        <h2
-          className={`${styles.sectionHeadText} bg-gradient-to-r from-[#eb3b91] to-[#6773de] bg-clip-text text-transparent`}
+        <h1 className="absolute inset-0 flex justify-center items-center text-[5rem] md:text-[6rem] font-black text-white opacity-5 pointer-events-none uppercase">
+          Projects
+        </h1>
+
+        <motion.div
+          variants={fadeIn("up", "spring", 0.2, 1)}
+          className="relative z-10 text-center"
         >
-          My Work
-        </h2>
-        <p className="mt-4 text-gray-400 text-[17px] max-w-3xl mx-auto leading-[30px]">
-          The following projects showcase my skills through real-world examples.
-          Each is briefly described with links to code repositories and live
-          demos, reflecting my ability to solve complex problems and work with
-          diverse technologies.
-        </p>
-      </motion.div>
+          <h2
+            className={`${styles.sectionHeadText} bg-gradient-to-r from-[#eb3b91] to-[#6773de] bg-clip-text text-transparent`}
+          >
+            Projects
+          </h2>
+        </motion.div>
+      </section>
 
       <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-14">
         {projects.map((p, i) => (
