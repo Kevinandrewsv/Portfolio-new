@@ -210,6 +210,14 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 /* Add top gap when scrolling to services */
 #services { scroll-margin-top: 200px; }
 
+/* Hide the hero "scroll down" arrow on small screens to avoid overlaying buttons */
+@media (max-width: 768px) {
+  .scroll-btn {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
 /* ---------------------------
    Interactive background CSS
    --------------------------- */
@@ -284,5 +292,53 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 
 /* small helper: visible focus ring for keyboard users */
 a:focus, button:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
+
+/* Scroll to top button styles (append these to src/index.css) */
+
+/* Scroll to top button base */
+.scroll-to-top {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(12, 18, 30, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: white;
+  transition: transform 200ms cubic-bezier(.2,.9,.2,1), opacity 150ms ease;
+  will-change: transform, opacity;
+}
+
+/* Hover / active */
+.scroll-to-top:hover {
+  transform: translateY(-4px) scale(1.03);
+}
+
+.scroll-to-top:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* Make focus visible for keyboard users */
+.scroll-to-top:focus-visible {
+  outline: none;
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.45), 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* When hidden we scale down */
+.scroll-to-top.scale-0 {
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* When visible */
+.scroll-to-top.scale-100 {
+  transform: scale(1);
+  opacity: 1;
+}
+
 
 /* End of src/index.css */

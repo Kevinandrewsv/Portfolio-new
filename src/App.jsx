@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { useEffect, useState } from "react";
-import InteractiveBackground from "./components/InteractiveBackground"; // <-- new
+import InteractiveBackground from "./components/InteractiveBackground";
 import About from "./components/About";
 import Works from "./components/Works";
 import Menu from "./components/Menu";
@@ -12,9 +12,80 @@ import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
 
-import "../src/buttonStyle.css";
+import "./index.css"; // <-- load your full stylesheet (includes scroll-to-top styles)
 import { styles } from "./style";
 import { initLenis } from "./lib/lenis";
+
+const ScrollToTopButton = () => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.pageYOffset > 300);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const scrollToTop = (opts = {}) => {
+    const { duration = 1.0 } = opts;
+
+    // Respect users who prefer reduced motion
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // If Lenis exists, prefer its API for consistent smoothness
+    try {
+      if (window.lenis && typeof window.lenis.scrollTo === "function") {
+        if (prefersReduced) {
+          // Reduced-motion users: use instant native jump
+          window.scrollTo({ top: 0, behavior: "auto" });
+        } else {
+          // Lenis typically expects duration in seconds
+          window.lenis.scrollTo(0, { duration });
+        }
+        return;
+      }
+    } catch (e) {
+      // fallback to native behavior below
+    }
+
+    // Native fallback: smooth unless user prefers reduced motion
+    const behavior = prefersReduced ? "auto" : "smooth";
+    window.scrollTo({ top: 0, behavior });
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+      e.preventDefault();
+      scrollToTop();
+    }
+  };
+
+  return (
+    <button
+      aria-label="Scroll to top"
+      title="Back to top"
+      className={`scroll-to-top fixed right-6 bottom-6 z-50 transform transition-transform duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500
+        ${visible ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"}
+        md:right-8 md:bottom-8`}
+      onClick={() => scrollToTop()}
+      onKeyDown={onKeyDown}
+    >
+      {/* Up chevron */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-5 w-5"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M10 6.293L4.146 12.147a.5.5 0 10.708.707L10 7.707l5.146 5.147a.5.5 0 00.708-.707L10 6.293z" />
+      </svg>
+    </button>
+  );
+};
 
 const App = () => {
   const [loading, setLoading] = useState(true);
@@ -29,40 +100,32 @@ const App = () => {
   useEffect(() => {
     let mounted = true;
 
-    // Initialize smoothscroll polyfill (optional) and Lenis (graceful if not installed)
     const setupScroll = async () => {
-      // Polyfill native smooth scroll in older browsers if available
       try {
         const smoothscroll = await import("smoothscroll-polyfill");
         if (smoothscroll && smoothscroll.polyfill) smoothscroll.polyfill();
       } catch (e) {
-        // polyfill not installed — ignore
+        // ignore
       }
 
-      // Initialize Lenis (if lenis is installed). initLenis is safe if lenis missing it will throw,
-      // so we wrap it. If you didn't install lenis, this silently fails and native smooth scrolling remains.
       try {
         initLenis({ duration: 1.0, lerp: 0.075 });
       } catch (e) {
-        // Lenis not available or initialization failed. fallback to native smooth scroll.
-        // console.warn("Lenis init failed:", e);
+        // ignore
       }
     };
 
     setupScroll();
 
-    // Keep CSS var --nav-height updated to match measured header (.site-nav)
     const updateNavHeight = () => {
       const navEl = document.querySelector(".site-nav");
       const height = navEl ? Math.round(navEl.getBoundingClientRect().height) : 80;
       document.documentElement.style.setProperty("--nav-height", `${height}px`);
-      // Also keep scroll-padding-top for fallback CSS-only anchors
       document.documentElement.style.setProperty("scroll-padding-top", `${height}px`);
     };
 
     updateNavHeight();
 
-    // Recompute on resize and when fonts load (fonts can change layout)
     window.addEventListener("resize", updateNavHeight);
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
@@ -81,22 +144,13 @@ const App = () => {
   return (
     <>
       <ScrollProgress />
-      {/* make this relative so our absolute background sits inside */}
       <div className="bg-primary overflow-hidden relative">
-        {/* interactive background — place it BEFORE content so it's behind */}
         <InteractiveBackground particleCount={28} />
 
-        {/* make your content stack above background: set z-index if needed */}
-        <div className="h-[100vh] relative overflow-visible"> {/* hero container is positioned */}
+        <div className="h-[100vh] relative overflow-visible">
           <Menu />
           <About />
-
-          {/* Scroll button placed inside the hero so it is positioned relative to this container */}
-          <a
-            href="#services"
-            aria-label="Scroll to services"
-            className="scroll-btn"
-          />
+          <a href="#services" aria-label="Scroll to services" className="scroll-btn" />
         </div>
 
         <div className="pt-10">
@@ -111,9 +165,10 @@ const App = () => {
         </section>
         <Contact />
 
-        <h1 className={`${styles.heroSubText} text-center py-4`}>
-          Made by Kevin Andrews
-        </h1>
+        <h1 className={`${styles.heroSubText} text-center py-4`}>Made by Kevin Andrews</h1>
+
+        {/* Scroll to top button */}
+        <ScrollToTopButton />
       </div>
     </>
   );

@@ -92,7 +92,7 @@ const About = () => {
       viewport={{ once: true, amount: 0.25 }}
       className="
         sm:px-16 px-6
-        pt-20 lg:pt-24 pb-8
+        pt-8 lg:pt-24 pb-8
         max-w-7xl mx-auto
         scroll-mt-[80px] lg:scroll-mt-[96px]
         relative
@@ -100,148 +100,298 @@ const About = () => {
     >
       <span className="hash-span" id="about" aria-hidden="true" />
 
-      <motion.div className="flex justify-between">
-        <motion.div variants={fadeIn("right", "spring", 0.2, 1)}>
-          {/* Greeting */}
-          <motion.h1
-            variants={fadeIn("right", "tween", 0.3, 1)}
-            className="flex items-center animate-pulse font-semibold -mt-20 mb-5 w-fit gap-2"
-          >
-            <span className="orange-text-gradient">{`Hi, ${greetText}`}</span>
-            <span className="text-white">{greetEmoji}</span>
-          </motion.h1>
+      {/* ---------------------------
+          DESKTOP: EXACT ORIGINAL (unchanged)
+          Rendered only at lg and above
+         --------------------------- */}
+      <div className="hidden lg:block">
+        <motion.div className="flex justify-between">
+          <motion.div variants={fadeIn("right", "spring", 0.2, 1)}>
+            {/* Greeting */}
+            <motion.h1
+              variants={fadeIn("right", "tween", 0.3, 1)}
+              className="flex items-center animate-pulse font-semibold -mt-20 mb-5 w-fit gap-2"
+            >
+              <span className="orange-text-gradient">{`Hi, ${greetText}`}</span>
+              <span className="text-white">{greetEmoji}</span>
+            </motion.h1>
 
-          {/* Name with gradient + hover */}
-          <motion.p
-            variants={fadeIn("right", "spring", 0.4, 1)}
-            className={styles.heroHeadText}
-          >
-            I’m{" "}
-            {name.map((char, idx) => (
-              <motion.span
-                key={idx}
-                variants={letterVariant}
-                initial="rest"
-                whileHover="hover"
-                animate="rest"
-                className="inline-block bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
-              >
-                {char}
-              </motion.span>
-            ))}
-          </motion.p>
-
-          {/* Hero sub-text */}
-          <motion.p
-            variants={fadeIn("right", "spring", 0.5, 1)}
-            className={`${styles.heroSubText} inline-flex items-center text-white`}
-          >
-            Full stack Developer in&nbsp;
-            <span style={{ position: "relative", display: "inline-block" }}>
-              <AnimatePresence initial={false} mode="wait">
+            {/* Name with gradient + hover */}
+            <motion.p
+              variants={fadeIn("right", "spring", 0.4, 1)}
+              className={styles.heroHeadText}
+            >
+              I’m{" "}
+              {name.map((char, idx) => (
                 <motion.span
-                  key={skillIdx}
-                  variants={{
-                    initial: { y: 10, opacity: 0, filter: "blur(6px)" },
-                    animate: { y: 0, opacity: 1, filter: "blur(0px)" },
-                    exit: { y: -10, opacity: 0, filter: "blur(6px)" },
-                  }}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={{ duration: 0.35, ease: "easeInOut" }}
-                  className={
-                    `whitespace-nowrap inline-block bg-clip-text text-transparent ` +
-                    skillGradients[skills[skillIdx]]
-                  }
+                  key={idx}
+                  variants={letterVariant}
+                  initial="rest"
+                  whileHover="hover"
+                  animate="rest"
+                  className="inline-block bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
                 >
-                  {skills[skillIdx]}
+                  {char}
                 </motion.span>
-              </AnimatePresence>
-            </span>
-          </motion.p>
+              ))}
+            </motion.p>
 
-          {/* Code block animation */}
-          <motion.div variants={fadeIn("right", "spring", 0.6, 1)}>
-            <div className="mt-6 text-xl">
-              <h1 className="text-white tracking-wide font-bold">
-                while (
-                <span
-                  ref={codeEl}
-                  className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text"
-                />
-                )&#123;
-                <br />
-                <span className="bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
-                  tryAgain();
-                </span>
-                <br />
-                <span>
-                  if(
-                  <span className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text">
-                    dead
-                  </span>
+            {/* Hero sub-text */}
+            <motion.p
+              variants={fadeIn("right", "spring", 0.5, 1)}
+              className={`${styles.heroSubText} inline-flex items-center text-white`}
+            >
+              Full stack Developer in&nbsp;
+              <span style={{ position: "relative", display: "inline-block" }}>
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.span
+                    key={skillIdx}
+                    variants={{
+                      initial: { y: 10, opacity: 0, filter: "blur(6px)" },
+                      animate: { y: 0, opacity: 1, filter: "blur(0px)" },
+                      exit: { y: -10, opacity: 0, filter: "blur(6px)" },
+                    }}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className={
+                      `whitespace-nowrap inline-block bg-clip-text text-transparent ` +
+                      skillGradients[skills[skillIdx]]
+                    }
+                  >
+                    {skills[skillIdx]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </motion.p>
+
+            {/* Code block animation */}
+            <motion.div variants={fadeIn("right", "spring", 0.6, 1)}>
+              <div className="mt-6 text-xl">
+                <h1 className="text-white tracking-wide font-bold">
+                  while (
+                  <span
+                    ref={codeEl}
+                    className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text"
+                  />
                   )&#123;
+                  <br />
+                  <span className="bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
+                    tryAgain();
+                  </span>
+                  <br />
+                  <span>
+                    if(
+                    <span className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text">
+                      dead
+                    </span>
+                    )&#123;
+                  </span>
+                  <br />
+                  <span className="ml-5 bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
+                    break;
+                  </span>
+                  <br />
+                  &#125;
+                  <br />
+                  &#125;
+                </h1>
+
+                {/* Buttons */}
+                <div className="mt-6 flex gap-4">
+                  <motion.a
+                    variants={fadeIn("right", "spring", 0.7, 1)}
+                    href="/Kevin_Andrews_Resume.pdf"
+                    download
+                    className="px-6 py-2 bg-gradient-to-r from-[#eb3b91] to-[#6773de] text-white font-semibold rounded-full hover:scale-105 transition-transform"
+                  >
+                    Download CV
+                  </motion.a>
+                  <motion.a
+                    variants={fadeIn("right", "spring", 0.8, 1)}
+                    href="#contact"
+                    className="px-6 py-2 border-2 border-indigo-500 text-indigo-400 font-semibold rounded-full hover:bg-indigo-500 hover:text-white transition duration-200"
+                  >
+                    Contact Me
+                  </motion.a>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Social icons (desktop vertical) */}
+          <motion.div
+            variants={fadeIn("left", "spring", 0.5, 1)}
+            className="text-indigo-400 opacity-90 space-y-9 mt-8"
+          >
+            {socialLinks.map((socialLink, idx) => (
+              <motion.div
+                key={idx}
+                variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}
+              >
+                <IconContext.Provider value={{ className: "icon-class" }}>
+                  <a
+                    title={socialLink.name}
+                    href={socialLink.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <socialLink.icon
+                      size={25}
+                      className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer"
+                    />
+                  </a>
+                </IconContext.Provider>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* ---------------------------
+          MOBILE: improved layout only (lg:hidden)
+         --------------------------- */}
+      <div className="lg:hidden">
+        <motion.div className="flex flex-col items-center">
+          <motion.div
+            variants={fadeIn("right", "spring", 0.2, 1)}
+            className="w-full max-w-md mx-auto px-4"
+          >
+            {/* Greeting */}
+            <motion.h1
+              variants={fadeIn("right", "tween", 0.3, 1)}
+              className="flex items-center animate-pulse font-semibold mt-2 mb-3 justify-center gap-2 text-sm"
+            >
+              <span className="orange-text-gradient">{`Hi, ${greetText}`}</span>
+              <span className="text-white">{greetEmoji}</span>
+            </motion.h1>
+
+            {/* NAME */}
+            <motion.div
+              variants={fadeIn("right", "spring", 0.4, 1)}
+              className="text-center"
+            >
+              <p className="text-white text-sm">I’m</p>
+              <div className="mt-2 flex justify-center items-center gap-3 leading-tight">
+                <span
+                  className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
+                  aria-hidden
+                >
+                  Kevin
                 </span>
-                <br />
-                <span className="ml-5 bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
-                  break;
+                <span
+                  className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
+                  aria-hidden
+                >
+                  Andrews
                 </span>
-                <br />
-                &#125;
-                <br />
-                &#125;
-              </h1>
+              </div>
+            </motion.div>
+
+            {/* Subtext */}
+            <motion.p
+              variants={fadeIn("right", "spring", 0.5, 1)}
+              className="text-white text-center mt-3 text-sm"
+            >
+              Full stack Developer in&nbsp;
+              <span style={{ position: "relative", display: "inline-block" }}>
+                <AnimatePresence initial={false} mode="wait">
+                  <motion.span
+                    key={skillIdx}
+                    variants={{
+                      initial: { y: 8, opacity: 0, filter: "blur(6px)" },
+                      animate: { y: 0, opacity: 1, filter: "blur(0px)" },
+                      exit: { y: -8, opacity: 0, filter: "blur(6px)" },
+                    }}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{ duration: 0.33, ease: "easeInOut" }}
+                    className={
+                      `whitespace-nowrap inline-block bg-clip-text text-transparent text-sm ` +
+                      skillGradients[skills[skillIdx]]
+                    }
+                  >
+                    {skills[skillIdx]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </motion.p>
+
+            {/* Code block */}
+            <motion.div variants={fadeIn("right", "spring", 0.6, 1)}>
+              <div className="mt-5 text-sm bg-transparent px-1">
+                <h1 className="text-white tracking-wide font-bold text-sm leading-relaxed">
+                  while (
+                  <span
+                    ref={codeEl}
+                    className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text"
+                  />
+                  )&#123;
+                  <br />
+                  <span className="bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
+                    tryAgain();
+                  </span>
+                  <br />
+                  <span>
+                    if(
+                    <span className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text">
+                      dead
+                    </span>
+                    )&#123;
+                  </span>
+                  <br />
+                  <span className="ml-5 bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
+                    break;
+                  </span>
+                  <br />
+                  &#125;
+                  <br />
+                  &#125;
+                </h1>
+              </div>
 
               {/* Buttons */}
-              <div className="mt-6 flex gap-4">
+              <div className="mt-6 flex flex-col gap-3 px-2">
                 <motion.a
                   variants={fadeIn("right", "spring", 0.7, 1)}
                   href="/Kevin_Andrews_Resume.pdf"
                   download
-                  className="px-6 py-2 bg-gradient-to-r from-[#eb3b91] to-[#6773de] text-white font-semibold rounded-full hover:scale-105 transition-transform"
+                  className="w-full px-6 py-3 bg-gradient-to-r from-[#eb3b91] to-[#6773de] text-white font-semibold rounded-full hover:scale-105 transition-transform text-center"
                 >
                   Download CV
                 </motion.a>
                 <motion.a
                   variants={fadeIn("right", "spring", 0.8, 1)}
                   href="#contact"
-                  className="px-6 py-2 border-2 border-indigo-500 text-indigo-400 font-semibold rounded-full hover:bg-indigo-500 hover:text-white transition duration-200"
+                  className="w-full px-6 py-3 border-2 border-indigo-500 text-indigo-400 font-semibold rounded-full hover:bg-indigo-500 hover:text-white transition duration-200 text-center"
                 >
                   Contact Me
                 </motion.a>
               </div>
-            </div>
+
+              {/* Mobile social row */}
+              <div className="flex w-full justify-center gap-6 mt-6">
+                <IconContext.Provider value={{ className: "icon-class" }}>
+                  {socialLinks.map((socialLink, idx) => (
+                    <a
+                      key={`mobile-social-${idx}`}
+                      title={socialLink.name}
+                      href={socialLink.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:-translate-y-1 transition-transform"
+                    >
+                      <socialLink.icon size={20} className="text-indigo-300" />
+                    </a>
+                  ))}
+                </IconContext.Provider>
+              </div>
+            </motion.div>
           </motion.div>
         </motion.div>
-
-        {/* Social icons */}
-        <motion.div
-          variants={fadeIn("left", "spring", 0.5, 1)}
-          className="text-indigo-400 opacity-90 space-y-9 mt-8"
-        >
-          {socialLinks.map((socialLink, idx) => (
-            <motion.div
-              key={idx}
-              variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}
-            >
-              <IconContext.Provider value={{ className: "icon-class" }}>
-                <a
-                  title={socialLink.name}
-                  href={socialLink.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <socialLink.icon
-                    size={25}
-                    className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer"
-                  />
-                </a>
-              </IconContext.Provider>
-            </motion.div>
-          ))}
-        </motion.div>
-      </motion.div>
+      </div>
     </motion.section>
   );
 };
