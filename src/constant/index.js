@@ -8,10 +8,10 @@ import {
 
 import taskpora from "../../src/assets/projects/taskpora.png";
 import doct from "../../src/assets/projects/doct.png";
-import zapcart from "../../src/assets/projects/zapcart.png";
+import zapcart from "../../src/assets/projects/Zapcart.png";
 import fashionova from "../../src/assets/projects/fashionova.png";
-import mindcore from "../../src/assets/projects/mindcore.png";
-import neuronest from "../../src/assets/projects/neuronest.png";  
+import mindcore from "../../src/assets/projects/Mindcore.png";
+import neuronest from "../../src/assets/projects/Neuronest.png";  
 import quickserve from "../../src/assets/projects/quickserve.png";
 import notemakers from "../../src/assets/projects/notes maker.png";
 import conexa from "../../src/assets/projects/conexa.png";
