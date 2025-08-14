@@ -1,15 +1,22 @@
 // src/components/ScrollProgress.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function ScrollProgress() {
   const [scrollPct, setScrollPct] = useState(0);
+  const ticking = useRef(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      const docHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-      setScrollPct(docHeight > 0 ? scrollTop / docHeight : 0);
+      if (!ticking.current) {
+        requestAnimationFrame(() => {
+          const scrollTop = window.scrollY;
+          const docHeight =
+            document.documentElement.scrollHeight - window.innerHeight;
+          setScrollPct(docHeight > 0 ? scrollTop / docHeight : 0);
+          ticking.current = false;
+        });
+        ticking.current = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -22,8 +29,8 @@ export default function ScrollProgress() {
       className="
         fixed right-4
         top-1/2 transform -translate-y-1/2
-        h-64        /* adjust height if needed */
-        w-1         /* slim width */
+        h-64
+        w-1
         rounded-full
         bg-gray-800
         overflow-hidden
@@ -33,13 +40,10 @@ export default function ScrollProgress() {
       <div
         className="
           w-full
-          bg-gradient-to-t       /* gradient direction: bottom → top */
+          bg-gradient-to-t
           from-[#eb3b91]
           to-[#6773de]
           origin-top
-          transition-all
-          duration-200
-          ease-out
         "
         style={{ height: `${scrollPct * 100}%` }}
       />

@@ -31,7 +31,6 @@ const StarWrapper = (Component, idName) =>
 const Menu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [active, setActive] = useState("Home");
-  const [isHover, setIsHover] = useState(false);
   const navRef = useRef(null);
 
   const activeStyles = {
@@ -97,20 +96,18 @@ const Menu = () => {
 
   return (
     <motion.div variants={fadeIn("top", "spring", 0.5, 2)}>
-      {/* Full-screen blur overlay (blurs content behind nav). z ordering: overlay below nav but above page content. */}
+      {/* Full-screen blur overlay only when menu is open */}
       <div
         aria-hidden
         className={`fixed inset-0 transition-all duration-300 pointer-events-none
-          ${isOpen ? "backdrop-blur-xl bg-black/30 pointer-events-auto z-30" : isHover ? "backdrop-blur-lg bg-black/10 z-20" : "backdrop-blur-0 bg-transparent z-0"}
+          ${isOpen ? "backdrop-blur-xl bg-black/30 pointer-events-auto z-30" : "bg-transparent z-0"}
         `}
       />
 
-      {/* NOTE: .site-nav used to measure nav height for offset calculations */}
+      {/* Navigation */}
       <div
         className="fixed top-0 left-0 w-full z-40 flex justify-center py-4 site-nav"
         ref={navRef}
-        onMouseEnter={() => setIsHover(true)}
-        onMouseLeave={() => setIsHover(false)}
       >
         {/* Mobile toggle */}
         <button
@@ -125,7 +122,7 @@ const Menu = () => {
         {/* Nav items */}
         <ul
           className={`
-             bg-opacity-10 backdrop-blur-md
+            bg-opacity-10 backdrop-blur-md
             border border-white/10 shadow-lg shadow-black/40
             rounded-full px-6 py-2
             flex flex-col lg:flex-row items-center

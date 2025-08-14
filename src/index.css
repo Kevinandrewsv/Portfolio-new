@@ -1,9 +1,16 @@
+/* src/index.css
+   Full updated stylesheet — includes your original rules plus smooth-scroll, accessibility,
+   and small performance tweaks (scroll-padding, stable scrollbar gutter, body.menu-open).
+*/
+
+/* Google fonts */
 @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Saira:ital,wdth,wght@0,104.8,439;1,104.8,439&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* --------- Custom utilities & keyframes --------- */
 @layer utilities {
   @keyframes dash {
     100% { stroke-dashoffset: -400; }
@@ -20,7 +27,7 @@
   fill: white !important;
 }
 
-/* Hide all scrollbars */
+/* Hide all scrollbars for contribution calendar area */
 .contrib-calendar,
 .contrib-calendar > div,
 .contrib-calendar > div > div {
@@ -35,24 +42,52 @@
   display: none !important;
 }
 
-/* Global reset + black background */
+/* --------------------------
+   Global reset + black bg
+   -------------------------- */
+:root {
+  --nav-height: 80px; /* tune this to your header height */
+  --page-bg: #000;
+  --font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --reduced-motion: 0;
+}
+
+/* Allow authors to update nav height quickly (also used for scroll-padding-top) */
+@media (min-width: 1024px) {
+  /* If desktop header is taller, update --nav-height in JS or override in another stylesheet */
+}
+
 html, body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
+  font-family: var(--font-sans);
   scroll-behavior: smooth;
-
-  /* solid black behind everything */
-  background-color: #000;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none;
+  background-color: var(--page-bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.06) transparent;
 }
 
+/* Stable gutter to avoid layout shift when scrollbars show/hide */
+html { scrollbar-gutter: stable; }
+
+/* Smooth-scrolling offset for anchor links and focus navigation */
+html { scroll-padding-top: var(--nav-height); }
+
+/* Hide scrollbar visuals for webkit where desired */
+html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
+/* Quick utility toggles for programmatic scrolling */
+body.menu-open { overflow: hidden; overscroll-behavior: none; }
+.no-pointer-events-during-scroll * { pointer-events: none !important; }
+
+/* keep screen reader focus styles visible */
+:focus { outline: 2px solid rgba(99,102,241,0.9); outline-offset: 2px; }
+
+/* --------- Your existing classes (kept & enhanced) --------- */
 .hash-span {
   margin-top: -100px;
   padding-bottom: 100px;
@@ -114,11 +149,9 @@ body::-webkit-scrollbar {
   25%           { transform: rotate(0.5deg); }
   75%           { transform: rotate(-0.5deg); }
 }
-.animate-tilt {
-  animation: tilt 10s infinite linear;
-}
+.animate-tilt { animation: tilt 10s infinite linear; }
 
-/* line clamp */
+/* line clamp utility */
 .line-clamp-4 {
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -126,37 +159,30 @@ body::-webkit-scrollbar {
   overflow: hidden;
 }
 
-/* backdrop blur */
+/* backdrop blur support check */
 @supports (backdrop-filter: blur(12px)) {
-  .backdrop-blur-sm {
-    backdrop-filter: blur(12px);
-  }
+  .backdrop-blur-sm { backdrop-filter: blur(12px); }
 }
 
-/* place this in src/index.css or buttonStyle.css (global) */
-
-/* ensure html smooth scroll */
-html { scroll-behavior: smooth; }
-
-/* scroll button (absolute, used inside hero container) */
+/* scroll button (hero) */
 .scroll-btn {
-  position: absolute;       /* IMPORTANT: positioned relative to the hero wrapper */
+  position: absolute;
   left: 50%;
-  bottom: 2.5rem;           /* distance from bottom of hero - tweak as needed */
+  bottom: 2.5rem;
   transform: translateX(-50%);
   height: 40px;
   width: 20px;
   border: 2px solid #62cafd;
   border-radius: 30px;
   animation: h-animation 4s alternate;
-  z-index: 60;              /* must be above .relative z-10 content and background */
+  z-index: 60;
   cursor: pointer;
-  pointer-events: auto;     /* ensure clickable */
-  background: transparent;  /* keep it transparent so hero bg shows */
+  pointer-events: auto;
+  background: transparent;
   display: block;
 }
 
-/* arrow pieces (keeps your original look) */
+/* arrows inside scroll-btn */
 .scroll-btn::before,
 .scroll-btn::after {
   content: "";
@@ -179,30 +205,24 @@ html { scroll-behavior: smooth; }
   60%  { opacity: 1; }
   100% { opacity: 0; top: 90%; }
 }
-
-/* optional hover/active tweaks */
 .scroll-btn:hover { transform: translateX(-50%) translateY(-2px); }
 
 /* Add top gap when scrolling to services */
-#services {
-  scroll-margin-top: 200px; /* adjust px to match your header or desired gap */
-}
-
+#services { scroll-margin-top: 200px; }
 
 /* ---------------------------
    Interactive background CSS
-   Paste into src/index.css
    --------------------------- */
-
 .interactive-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
-  pointer-events: none; /* allow clicks through */
+  pointer-events: none;
   overflow: hidden;
   touch-action: none;
   --mx: 50%;
   --my: 50%;
+  will-change: transform, opacity;
 }
 
 /* softer overlay but less blur so content stays crisp */
@@ -215,13 +235,12 @@ html { scroll-behavior: smooth; }
     radial-gradient(420px circle at calc(var(--mx) + 8%) calc(var(--my) + 6%), rgba(6,214,192,0.06), transparent 12%),
     linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.18));
   mix-blend-mode: screen;
-  transition: opacity 160ms linear;
+  transition: opacity 160ms linear, transform 220ms ease;
   pointer-events: none;
-  /* reduced blur compared to earlier version for crisper result */
   filter: blur(4px);
 }
 
-/* Particle base — no heavy blur; glowing with box-shadow for crisper edges */
+/* Particle base — optimized for transforms */
 .interactive-particle {
   position: absolute;
   border-radius: 999px;
@@ -230,6 +249,7 @@ html { scroll-behavior: smooth; }
   opacity: 0.9;
   pointer-events: none;
   mix-blend-mode: screen;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.25);
 }
 
 /* ripple on click/touch */
@@ -244,13 +264,10 @@ html { scroll-behavior: smooth; }
   opacity: 0.9;
 }
 @keyframes rippleAnim {
-  to {
-    transform: translate(-50%, -50%) scale(6);
-    opacity: 0;
-  }
+  to { transform: translate(-50%, -50%) scale(6); opacity: 0; }
 }
 
-/* optional slow float for subtle life */
+/* slow float */
 @keyframes slowFloat {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-6px); }
@@ -261,5 +278,11 @@ html { scroll-behavior: smooth; }
 /* reduce motion for prefers-reduced-motion users */
 @media (prefers-reduced-motion: reduce) {
   .interactive-bg { animation: none !important; }
-  .interactive-particle { transition: none !important; }
+  .interactive-particle { transition: none !important; animation: none !important; }
+  :root { --reduced-motion: 1; }
 }
+
+/* small helper: visible focus ring for keyboard users */
+a:focus, button:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
+
+/* End of src/index.css */
