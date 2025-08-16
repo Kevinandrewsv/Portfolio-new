@@ -178,7 +178,7 @@ const Services = () => {
               </button>
               <button className="px-4 py-2 flex items-center gap-2 bg-gray-900 hover:bg-gray-700 rounded-full transition">
                 <FaDatabase className="text-blue-400 w-5 h-5" />
-                <span className="text-gray-200 text-sm">Database Development / Management</span>
+                <span className="text-gray-200 text-sm">Database   Management</span>
               </button>
               <button className="px-4 py-2 flex items-center gap-2 bg-gray-900 hover:bg-gray-700 rounded-full transition">
                 <FaCogs className="text-yellow-400 w-5 h-5" />

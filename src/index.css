@@ -10,6 +10,24 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-1: 0 100% 63%;
+  --color-2: 270 100% 63%;
+  --color-3: 210 100% 63%;
+  --color-4: 195 100% 63%;
+  --color-5: 90 100% 63%;
+
+  /* optional: adjust rainbow animation speed globally */
+  --speed: 2s;
+}
+
+/* Optional: reduce the intensity of the blurred glow if it's too strong */
+.RainbowButtonGlowAdjuster {
+  /* not required; example usage if you add class to modify blur */
+  --glow-blur: calc(0.6*1rem);
+}
+
+
 /* --------- Custom utilities & keyframes --------- */
 @layer utilities {
   @keyframes dash {
@@ -168,8 +186,8 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 .scroll-btn {
   position: absolute;
   left: 50%;
-  bottom: 2.5rem;
-  transform: translateX(-50%);
+  bottom: 2rem; /* distance from bottom of hero */
+  transform: translateX(-50%); /* center horizontally */
   height: 40px;
   width: 20px;
   border: 2px solid #62cafd;
@@ -181,6 +199,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   background: transparent;
   display: block;
 }
+
 
 /* arrows inside scroll-btn */
 .scroll-btn::before,
@@ -207,8 +226,21 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 .scroll-btn:hover { transform: translateX(-50%) translateY(-2px); }
 
-/* Add top gap when scrolling to services */
-#services { scroll-margin-top: 200px; }
+#services {
+  scroll-margin-top: 150px; /* always leave 100px space when scrolled into view */
+}
+
+/* add to your global CSS file (not component) */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.star-twinkle {
+  animation: star-twinkle 2s infinite ease-in-out;
+}
+
+
 
 /* Hide the hero "scroll down" arrow on small screens to avoid overlaying buttons */
 @media (max-width: 768px) {

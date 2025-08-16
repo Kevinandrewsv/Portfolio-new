@@ -1,8 +1,11 @@
+// src/components/Menu.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { fadeIn } from "../utils/motion";
-import { FiMenu, FiX } from "react-icons/fi";
 
+/**
+ * StarWrapper: keeps the scroll-mt spacing and shared motion props.
+ */
 const StarWrapper = (Component, idName) =>
   function HOC() {
     return (
@@ -25,24 +28,23 @@ const StarWrapper = (Component, idName) =>
   };
 
 const Menu = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [active, setActive] = useState("Home");
   const navRef = useRef(null);
 
   const navItems = [
-    { label: "Home" },
-    { label: "Skills" },
-    { label: "Projects" },
-    { label: "Contributions" },
-    { label: "Contact" },
+    { label: "Home", id: "home" },
+    { label: "Skills", id: "skills" },
+    { label: "Projects", id: "projects" },
+    { label: "Contributions", id: "contributions" },
+    { label: "Contact", id: "contact" },
   ];
 
   const activeStyles = {
-    Home: "bg-indigo-500 bg-opacity-80 text-white font-semibold",
-    Skills: "bg-purple-500 bg-opacity-80 text-white font-semibold",
-    Projects: "bg-green-500 bg-opacity-80 text-white font-semibold",
-    Contributions: "bg-pink-500 bg-opacity-80 text-white font-semibold",
-    Contact: "bg-yellow-500 bg-opacity-80 text-white font-semibold",
+    Home: "text-white font-semibold",
+    Skills: "text-white font-semibold",
+    Projects: "text-white font-semibold",
+    Contributions: "text-white font-semibold",
+    Contact: "text-white font-semibold",
   };
 
   const indicatorStyles = {
@@ -53,112 +55,180 @@ const Menu = () => {
     Contact: "bg-yellow-600",
   };
 
-  const scrollToSection = (id) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const navHeight = navRef.current
-      ? Math.round(navRef.current.getBoundingClientRect().height)
-      : 0;
-    const extraGap = 8;
-    const y = el.getBoundingClientRect().top + window.pageYOffset - navHeight - extraGap;
-    if (isOpen) {
-      setIsOpen(false);
-      setTimeout(() => window.scrollTo({ top: y, behavior: "smooth" }), 120);
-    } else {
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
+  const lampBg = {
+    Home: "bg-indigo-500/10",
+    Skills: "bg-purple-500/10",
+    Projects: "bg-green-500/10",
+    Contributions: "bg-pink-500/10",
+    Contact: "bg-yellow-500/10",
   };
 
-  const handleClick = (label) => {
-    setActive(label);
-    if (label === "Home") {
-      if (isOpen) {
-        setIsOpen(false);
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 120);
-      } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+  // defensive small normalizer for class / attr strings (handles SVGAnimatedString etc.)
+  const normStr = (val) => {
+    if (!val && val !== 0) return "";
+    if (typeof val === "string") return val.toLowerCase();
+    if (val && typeof val === "object") {
+      if (typeof val.baseVal === "string") return val.baseVal.toLowerCase();
+      try {
+        return String(val).toLowerCase();
+      } catch (e) {
+        return "";
       }
-    } else {
-      scrollToSection(label.toLowerCase());
+    }
+    return String(val).toLowerCase();
+  };
+
+  // Lightweight section finder used only for active detection.
+  const findSectionElement = (id) => {
+    if (!id) return null;
+    const needle = id.toLowerCase();
+
+    const byId = document.getElementById(id);
+    if (byId) return byId;
+
+    const byAttr = document.querySelector(`[data-section="${id}"], [data-nav="${id}"], [aria-label="${id}"], [name="${id}"]`);
+    if (byAttr) return byAttr;
+
+    // prefer top-level semantic containers only
+    const containers = Array.from(document.querySelectorAll("section, main, [role='region']"));
+    for (const s of containers) {
+      const idAttr = normStr(s.id);
+      const dataSection = normStr(s.getAttribute && s.getAttribute("data-section"));
+      const aria = normStr(s.getAttribute && s.getAttribute("aria-label"));
+      const name = normStr(s.getAttribute && s.getAttribute("name"));
+      const cls = normStr(s.className || (s.getAttribute && s.getAttribute("class")));
+      if (idAttr === needle || dataSection === needle || aria === needle || name === needle) return s;
+      if (
+        (idAttr && idAttr.includes(needle)) ||
+        (dataSection && dataSection.includes(needle)) ||
+        (aria && aria.includes(needle)) ||
+        (cls && cls.includes(needle))
+      ) {
+        return s;
+      }
+    }
+
+    return null;
+  };
+
+  // Click handler: call centralized scroll function on window (provided by App)
+  const handleClick = (label, id) => {
+    setActive(label);
+    try {
+      if (typeof window !== "undefined" && typeof window.scrollToSection === "function") {
+        window.scrollToSection(id);
+      } else {
+        // fallback: basic native behavior
+        const el = findSectionElement(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } catch (e) {
+      // fallback safe
+      const el = findSectionElement(id);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
-  // 🔹 Detect section in view and update active tab
+  // Active tracking: simple, robust scroll listener (no programmatic lock)
   useEffect(() => {
-    const sectionIds = navItems.map((item) => item.label.toLowerCase());
-    const navHeight = navRef.current
-      ? Math.round(navRef.current.getBoundingClientRect().height)
-      : 0;
+    const ids = navItems.map((i) => i.id || i.label.toLowerCase());
 
-    const onScroll = () => {
-      const scrollPos = window.scrollY + navHeight + 10; // small offset
+    const updateActive = () => {
+      const navEl = navRef.current;
+      const navHeight = navEl ? Math.round(navEl.getBoundingClientRect().height) : Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-height") || "80", 10);
+      const scrollPos = window.scrollY + navHeight + 12;
       let current = "Home";
-
-      for (let id of sectionIds) {
-        const section = document.getElementById(id);
-        if (section && scrollPos >= section.offsetTop) {
-          current = section.id.charAt(0).toUpperCase() + section.id.slice(1);
+      for (let i = 0; i < ids.length; i++) {
+        const id = ids[i];
+        const el = findSectionElement(id);
+        if (el) {
+          const top = el.offsetTop || (el.getBoundingClientRect().top + window.pageYOffset);
+          if (scrollPos >= top) current = navItems[i].label;
         }
       }
-      setActive(current);
+      setActive((prev) => (prev === current ? prev : current));
     };
 
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("resize", updateActive);
+    updateActive();
+    return () => {
+      window.removeEventListener("scroll", updateActive);
+      window.removeEventListener("resize", updateActive);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <motion.div variants={fadeIn("top", "spring", 0.5, 2)}>
-      {/* Overlay */}
       <div
-        aria-hidden
-        className={`fixed inset-0 transition-all duration-300 pointer-events-none
-          ${isOpen ? "backdrop-blur-xl bg-black/30 pointer-events-auto z-30" : "bg-transparent z-0"}
-        `}
-      />
-      {/* Navbar */}
-      <div
-        className="fixed top-0 left-0 w-full z-40 flex justify-center py-4 site-nav"
         ref={navRef}
+        // add site-nav so App can measure nav height centrally
+        className="site-nav fixed bottom-0 sm:top-0 left-1/2 -translate-x-1/2 z-50 mb-6 sm:mb-0 sm:pt-6 pointer-events-auto"
       >
-        <button
-          onClick={() => setIsOpen((o) => !o)}
-          className="absolute left-6 lg:hidden z-50 text-gray-200 hover:text-gray-400"
-        >
-          {isOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
-        <ul
-          className={`bg-opacity-10 backdrop-blur-md border border-white/10 shadow-lg shadow-black/40
-            rounded-full px-6 py-2 flex flex-col lg:flex-row items-center
-            space-y-4 lg:space-y-0 lg:space-x-8 text-gray-100
-            transition-transform duration-300 relative z-50
-            ${isOpen ? "translate-y-0" : "-translate-y-full"} lg:translate-y-0
-          `}
-        >
-          {navItems.map(({ label }) => {
-            const isActive = active === label;
+        <div className="flex items-center gap-3 bg-white/5 border border-white/10 backdrop-blur-lg py-1 px-2 rounded-full shadow-lg">
+          {navItems.map((item) => {
+            const isActive = active === item.label;
+            const lightBg = lampBg[item.label];
+            const topBarClass = indicatorStyles[item.label];
+
             return (
-              <li
-                key={label}
-                className="relative cursor-pointer"
-                onClick={() => handleClick(label)}
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => handleClick(item.label, item.id)}
+                onMouseDown={(e) => e.preventDefault()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleClick(item.label, item.id);
+                  }
+                }}
+                aria-current={isActive ? "page" : undefined}
+                className={`relative cursor-pointer text-sm font-semibold px-5 py-2 rounded-full transition-colors
+                  ${isActive ? activeStyles[item.label] : "text-gray-100 hover:text-white/90"}
+                  focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500
+                `}
               >
+                <span className="hidden md:inline">{item.label}</span>
+                <span className="md:hidden">{item.label.charAt(0)}</span>
+
                 {isActive && (
-                  <span
-                    className={`absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-1.5 rounded-full ${indicatorStyles[label]} z-50`}
-                  />
+                  <motion.div
+                    layoutId="lamp"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    // make decorative lamp non-interactive so it never blocks hover/clicks
+                    className={`absolute inset-0 w-full rounded-full -z-10 ${lightBg} pointer-events-none`}
+                    aria-hidden="true"
+                    style={{ pointerEvents: "none" }}
+                  >
+                    <div
+                      className={`absolute -top-2 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full ${topBarClass} pointer-events-none`}
+                      aria-hidden="true"
+                    >
+                      <div
+                        className="absolute -top-2 -left-2 w-12 h-6 rounded-full blur-md opacity-30 pointer-events-none"
+                        style={{ backgroundColor: "currentColor", pointerEvents: "none" }}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="absolute -top-1 left-0 w-8 h-6 rounded-full blur-md opacity-20 pointer-events-none"
+                        style={{ backgroundColor: "currentColor", pointerEvents: "none" }}
+                        aria-hidden="true"
+                      />
+                      <div
+                        className="absolute top-0 left-2 w-4 h-4 rounded-full blur-sm opacity-20 pointer-events-none"
+                        style={{ backgroundColor: "currentColor", pointerEvents: "none" }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </motion.div>
                 )}
-                <div
-                  className={`flex items-center gap-2 px-3 py-1 rounded-full transition
-                    ${isActive ? activeStyles[label] : "hover:bg-white hover:bg-opacity-10"}
-                  `}
-                >
-                  <span>{label}</span>
-                </div>
-              </li>
+              </button>
             );
           })}
-        </ul>
+        </div>
       </div>
     </motion.div>
   );
