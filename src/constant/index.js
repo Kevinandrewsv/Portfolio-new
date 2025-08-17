@@ -80,8 +80,8 @@ const projects = [
   ],
   image: taskpora,
   server_link: "https://github.com/ImranSarkerWeb/tasty-drop-server",
-  client_link: "https://github.com/BakiAbdullah/Tasty-drop-client",
-  live_link: "https://tasty-drops.web.app/",
+  client_link: "https://github.com/Kevinandrewsv/Taskpora/tree/main/client",
+  live_link: "https://taskpora.vercel.app/",
 },
 
   {

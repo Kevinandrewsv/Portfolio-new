@@ -115,17 +115,6 @@ const About = () => {
     return () => clearInterval(iv);
   }, []);
 
-  const name = "Kevin Andrews".split("");
-  const letterVariant = {
-    rest: { y: 0, scale: 1, rotate: 0 },
-    hover: {
-      y: -8,
-      scale: 1.25,
-      rotate: 10,
-      transition: { type: "spring", stiffness: 500, damping: 30 },
-    },
-  };
-
   return (
     <motion.section
       id="about"
@@ -149,21 +138,12 @@ const About = () => {
               <span className="text-white">{greetEmoji}</span>
             </motion.h1>
 
-            <motion.p variants={fadeIn("right", "spring", 0.4, 1)} className={styles.heroHeadText}>
-              I’m{" "}
-              {name.map((char, idx) => (
-                <motion.span
-                  key={idx}
-                  variants={letterVariant}
-                  initial="rest"
-                  whileHover="hover"
-                  animate="rest"
-                  className="inline-block bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </motion.p>
+              <motion.p variants={fadeIn("right", "spring", 0.4, 1)} className={styles.heroHeadText}>
+                I’m{" "}
+                <span className="inline-block bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]">
+                  Kevin Andrews
+                </span>
+              </motion.p>
 
             <motion.p variants={fadeIn("right", "spring", 0.5, 1)} className={`${styles.heroSubText} inline-flex items-center text-white`}>
               Full stack Developer in&nbsp;
@@ -247,29 +227,28 @@ const About = () => {
             </motion.div>
           </motion.div>
 
-         <motion.div
-  variants={fadeIn("left", "spring", 0.5, 1)}
-  className="text-indigo-400 opacity-90 space-y-9  w-44 flex-shrink-0 self-start lg:self-center flex flex-col items-end"
->
-  {socialLinks.map((socialLink, idx) => (
-    <motion.div key={idx} variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}>
-      <IconContext.Provider value={{ className: "icon-class" }}>
-        <a
-          title={socialLink.name}
-          href={socialLink.link}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <socialLink.icon
-            size={25}
-            className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer"
-          />
-        </a>
-      </IconContext.Provider>
-    </motion.div>
-  ))}
-</motion.div>
-
+          <motion.div
+            variants={fadeIn("left", "spring", 0.5, 1)}
+            className="text-indigo-400 opacity-90 space-y-9  w-44 flex-shrink-0 self-start lg:self-center flex flex-col items-end"
+          >
+            {socialLinks.map((socialLink, idx) => (
+              <motion.div key={idx} variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}>
+                <IconContext.Provider value={{ className: "icon-class" }}>
+                  <a
+                    title={socialLink.name}
+                    href={socialLink.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <socialLink.icon
+                      size={25}
+                      className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer"
+                    />
+                  </a>
+                </IconContext.Provider>
+              </motion.div>
+            ))}
+          </motion.div>
         </motion.div>
       </div>
 
