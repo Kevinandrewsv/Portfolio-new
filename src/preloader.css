@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+/* color variables (keeps compatibility with .dark mode from your snippet) */
+:root {
+  --clr: #000;
+  --bkg: #fff;
+}
+
+.dark {
+  --bkg: #000;
+  --clr: #fff;
+}
+
+/* Your keyframes (taken from your snippet) */
+@keyframes pathTriangle {
+  33% { stroke-dashoffset: 74; }
+  66% { stroke-dashoffset: 147; }
+  100% { stroke-dashoffset: 221; }
+}
+
+@keyframes dotTriangle {
+  33% { transform: translate(0, 0); }
+  66% { transform: translate(10px, -18px); }
+  100% { transform: translate(-10px, -18px); }
+}
+
+@keyframes pathRect {
+  25% { stroke-dashoffset: 64; }
+  50% { stroke-dashoffset: 128; }
+  75% { stroke-dashoffset: 192; }
+  100% { stroke-dashoffset: 256; }
+}
+
+@keyframes dotRect {
+  25% { transform: translate(0, 0); }
+  50% { transform: translate(18px, -18px); }
+  75% { transform: translate(0, -36px); }
+  100% { transform: translate(-18px, -18px); }
+}
+
+@keyframes pathCircle {
+  25% { stroke-dashoffset: 125; }
+  50% { stroke-dashoffset: 175; }
+  75% { stroke-dashoffset: 225; }
+  100% { stroke-dashoffset: 275; }
+}
+
+/* Base loader layout */
+.preloader { background: var(--bkg); color: var(--clr); }
+
+.loader-wrapper { pointer-events: none; }
+
+/* size & default svg styles */
+.loader {
+  width: 72px;
+  height: 72px;
+  display: inline-block;
+}
+
+.loader svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--clr);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+/* Circle animation */
+.svg-circle circle {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 0;
+  transform-origin: 40px 40px;
+  animation: pathCircle 1.6s linear infinite;
+}
+
+/* Triangle animation */
+.loader.triangle polygon {
+  stroke-dasharray: 221;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: pathTriangle 1.6s linear infinite;
+}
+
+/* Rectangle animation */
+.svg-rect rect {
+  stroke-dasharray: 256;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: pathRect 1.6s linear infinite;
+}
+
+/* small responsive tweaks */
+@media (min-width: 768px) {
+  .loader { width: 96px; height: 96px; }
+}

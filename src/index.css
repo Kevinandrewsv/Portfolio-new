@@ -27,6 +27,83 @@
   --glow-blur: calc(0.6*1rem);
 }
 
+/* Loader: reliable stroke-draw animations */
+.preloader { background: var(--bkg, #000); color: var(--clr, #fff); }
+
+.loader-wrapper { pointer-events: none; display: flex; gap: 24px; align-items: center; justify-content: center; }
+
+/* Base svg sizing & stroke fallback so shapes are visible even if --clr not set */
+.loader {
+  width: 72px;
+  height: 72px;
+  display: inline-block;
+}
+
+.loader svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(255,255,255,0.95); /* fallback visible stroke */
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+
+/* --- Circle --- */
+/* circumference (approx) for r=32 -> 2πr ≈ 201; use slightly larger number for dash animation */
+.svg-circle circle {
+  stroke-dasharray: 201;        /* total length of dash pattern */
+  stroke-dashoffset: 201;       /* start fully hidden */
+  transform-origin: 40px 40px;
+  animation: drawCircle 1.6s ease-in-out infinite;
+}
+
+/* Draw/erase loop */
+@keyframes drawCircle {
+  0%   { stroke-dashoffset: 201; opacity: 1; }
+  45%  { stroke-dashoffset: 0;   opacity: 1; }
+  55%  { stroke-dashoffset: -60; opacity: 1; } /* slight overshoot for nicer loop */
+  100% { stroke-dashoffset: -201; opacity: 0.08; }
+}
+
+/* --- Triangle --- */
+.loader.triangle polygon {
+  stroke-dasharray: 221;       /* keep your previous length if it matched better */
+  stroke-dashoffset: 221;      /* start hidden */
+  transform-origin: center;
+  animation: drawTriangle 1.6s ease-in-out infinite;
+}
+
+@keyframes drawTriangle {
+  0%   { stroke-dashoffset: 221; opacity: 1; }
+  40%  { stroke-dashoffset: 0;   opacity: 1; }
+  60%  { stroke-dashoffset: -60; opacity: 1; }
+  100% { stroke-dashoffset: -221; opacity: 0.08; }
+}
+
+/* --- Rectangle --- */
+.svg-rect rect {
+  stroke-dasharray: 256;
+  stroke-dashoffset: 256;
+  transform-origin: center;
+  animation: drawRect 1.6s ease-in-out infinite;
+}
+
+@keyframes drawRect {
+  0%   { stroke-dashoffset: 256; opacity: 1; }
+  42%  { stroke-dashoffset: 0;   opacity: 1; }
+  62%  { stroke-dashoffset: -60; opacity: 1; }
+  100% { stroke-dashoffset: -256; opacity: 0.08; }
+}
+
+/* Slightly larger sizes on bigger screens */
+@media (min-width: 768px) {
+  .loader { width: 96px; height: 96px; }
+}
+
+
+
 
 /* --------- Custom utilities & keyframes --------- */
 @layer utilities {

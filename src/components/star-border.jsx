@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
  *
  * Props:
  * - as, color, speed, variant, size, className, children
+ *
+ * Note: innerBorder and chevron are explicitly consumed here so they are NOT forwarded
+ *       to the DOM (prevents React warnings about unknown DOM attributes).
  */
 export function StarBorder({
   as: Component = "button",
@@ -16,6 +19,8 @@ export function StarBorder({
   size = "compact",
   className = "",
   children,
+  innerBorder = false, // removed from ...props so won't be forwarded
+  chevron = false,      // removed from ...props so won't be forwarded
   ...props
 }) {
   const haloColor = color || "rgba(120,130,255,0.95)";
@@ -42,12 +47,17 @@ export function StarBorder({
   // gloss shimmer slower and very soft
   const glossAnim = `gloss-shimmer ${Math.max(parseFloat(speed) / 2 || 4, 3)}s linear infinite`;
 
-  const roleProps = Component === "a" && (!props.href || props.href === "#") ? { role: "button", tabIndex: 0 } : {};
+  const roleProps =
+    Component === "a" && (!props.href || props.href === "#")
+      ? { role: "button", tabIndex: 0 }
+      : {};
+
+  const innerClass = innerBorder ? "has-inner-border" : "";
 
   return (
     <Component
       {...roleProps}
-      {...props}
+      {...props} // safe: innerBorder & chevron are no longer in props
       className={cn(
         "group relative inline-flex items-center overflow-hidden select-none",
         s.pad,
@@ -55,6 +65,7 @@ export function StarBorder({
         s.radius,
         "transform-gpu transition-all duration-250 ease-out",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400",
+        innerClass,
         className
       )}
       title={props.title || (typeof children === "string" ? children : "Action")}
@@ -106,7 +117,7 @@ export function StarBorder({
           filter: "blur(10px)",
           opacity: 0.75,
           animation: glossAnim,
-          borderRadius: "999px", // ensure no hard corners visible
+          borderRadius: "999px",
         }}
         className="absolute -left-[90%] top-0 bottom-0 w-[220%] z-10 pointer-events-none"
       />
@@ -129,6 +140,20 @@ export function StarBorder({
         )}
       >
         {children}
+
+        {/* render chevron only when truthy (never forwarded as DOM attr) */}
+        {chevron && (
+          <svg
+            aria-hidden="true"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            className="ml-1"
+            focusable="false"
+          >
+            <path d="M8 9l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
       </span>
     </Component>
   );
