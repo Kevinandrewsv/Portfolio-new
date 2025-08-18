@@ -97,7 +97,7 @@ export default function ContributionsLamp() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.18, duration: 0.6 }}
-        className="mb-6 z-20 bg-white bg-clip-text text-transparent text-3xl md:text-5xl font-extrabold text-center"
+        className="mb-6 z-20 bg-gray-300 bg-clip-text text-transparent text-3xl md:text-5xl font-extrabold text-center"
         style={{ zIndex: 20 }}
       >
         My GitHub Contributions
