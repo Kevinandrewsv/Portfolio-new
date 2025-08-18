@@ -11,7 +11,7 @@ import { RainbowButton } from "./RainbowButton";
 import { StarBorder } from "./star-border";
 
 // ✅ Import your resume from assets
-import ResumePDF from "../assets/Kevin-FSD-Resume.pdf";
+import ResumePDF from "../assets/KevinAndrewsResume.pdf";
 
 const About = () => {
   const [greetings, setGreetings] = useState("");
@@ -210,7 +210,7 @@ const About = () => {
                   <motion.div variants={fadeIn("right", "spring", 0.7, 1)}>
                     <RainbowButton
                       href={ResumePDF}
-                      download="Kevin_Andrews_Resume.pdf"
+                      download="KevinAndrewsResume.pdf"
                       className="text-white font-semibold rounded-full hover:scale-105 transition-transform h-12 px-6 min-w-[180px]"
                       aria-label="Download Kevin Andrews resume"
                     >
