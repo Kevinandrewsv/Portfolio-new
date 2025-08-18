@@ -181,10 +181,27 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 body.menu-open { overflow: hidden; overscroll-behavior: none; }
 .no-pointer-events-during-scroll * { pointer-events: none !important; }
 
-/* keep screen reader focus styles visible */
-:focus { outline: 2px solid rgba(99,102,241,0.9); outline-offset: 2px; }
+/* ------------------------------
+   Accessible focus styles
+   - hide mouse/touch focus visuals
+   - show clear ring only for keyboard users
+   ------------------------------ */
 
-/* --------- Your existing classes (kept & enhanced) --------- */
+/* remove default outline/box-shadow by default (mouse/touch) */
+:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* show an accessible ring for keyboard users */
+:focus-visible {
+  outline: 2px solid rgba(99,102,241,0.9);
+  outline-offset: 2px;
+}
+
+/* -------------------------
+   Your existing classes (kept & enhanced)
+   ------------------------- */
 .hash-span {
   margin-top: -100px;
   padding-bottom: 100px;
@@ -280,7 +297,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 
 
-/* arrows inside scroll-btn */
+ /* arrows inside scroll-btn */
 .scroll-btn::before,
 .scroll-btn::after {
   content: "";
@@ -321,7 +338,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 
 
 
-/* Hide the hero "scroll down" arrow on small screens to avoid overlaying buttons */
+ /* Hide the hero "scroll down" arrow on small screens to avoid overlaying buttons */
 @media (max-width: 768px) {
   .scroll-btn {
     display: none !important;
@@ -402,7 +419,37 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 
 /* small helper: visible focus ring for keyboard users */
-a:focus, button:focus { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
+a:focus-visible, button:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
+
+/* NAV-SPECIFIC FOCUS FIXES
+   - keep nav buttons clean on mouse/touch
+   - show ring for keyboard users (focus-visible)
+   - remove Firefox inner focus border
+   - disable mobile tap highlight for nav
+*/
+.site-nav button,
+.site-nav a {
+  outline: none;
+  box-shadow: none;
+}
+
+.site-nav button:focus-visible,
+.site-nav a:focus-visible {
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.14);
+  border-radius: 9999px; /* match rounded pill */
+}
+
+/* Firefox inner focus removal */
+.site-nav button::-moz-focus-inner,
+button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+/* Disable mobile tap highlight on nav */
+.site-nav, .site-nav * {
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* Scroll to top button styles (append these to src/index.css) */
 

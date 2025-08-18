@@ -11,14 +11,12 @@ import SplinePage from "./components/SplinePage";
 import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
+import Footer from "./components/Footer"; 
 
-import "./index.css"; // <-- load your full stylesheet (includes scroll-to-top styles)
-import { styles } from "./style";
+import "./index.css"; 
 import { initLenis } from "./lib/lenis";
 
-/**
- * Helper: robust element lookup for sections
- */
+/* 🔎 robust section finder */
 const findSectionElement = (id) => {
   if (!id) return null;
   let el = document.getElementById(id);
@@ -29,7 +27,6 @@ const findSectionElement = (id) => {
   );
   if (el) return el;
 
-  // last resort: substring match
   const candidates = Array.from(
     document.querySelectorAll("section, main, [role='region'], [data-section], [data-nav]")
   );
@@ -39,8 +36,6 @@ const findSectionElement = (id) => {
     const idAttr = (s.id || "").toLowerCase();
     const dataSection = (s.getAttribute("data-section") || "").toLowerCase();
     const aria = (s.getAttribute("aria-label") || "").toLowerCase();
-
-    // 👇 FIX: ensure className is safely converted to a string
     const cls = typeof s.className === "string"
       ? s.className.toLowerCase()
       : (s.getAttribute("class") || "").toLowerCase();
@@ -57,10 +52,7 @@ const findSectionElement = (id) => {
   return null;
 };
 
-/**
- * Centralized scroll helper used by App-level anchors (prefers Lenis if present).
- * Keeps nav offset into account via CSS var --nav-height (set in App effect).
- */
+/* 🔎 universal scroll helper */
 const scrollToSection = (id, { duration = 1.0, extraGap = 8 } = {}) => {
   const prefersReduced =
     typeof window !== "undefined" &&
@@ -73,15 +65,11 @@ const scrollToSection = (id, { duration = 1.0, extraGap = 8 } = {}) => {
 
   if (!id) {
     const target = 0;
-    try {
-      if (window.lenis && typeof window.lenis.scrollTo === "function") {
-        if (prefersReduced) window.scrollTo({ top: 0, behavior: "auto" });
-        else window.lenis.scrollTo(target, { duration });
-        return;
-      }
-    } catch (e) {}
-    const behavior = prefersReduced ? "auto" : "smooth";
-    window.scrollTo({ top: target, behavior });
+    if (window.lenis?.scrollTo && !prefersReduced) {
+      window.lenis.scrollTo(target, { duration });
+      return;
+    }
+    window.scrollTo({ top: target, behavior: prefersReduced ? "auto" : "smooth" });
     return;
   }
 
@@ -94,46 +82,28 @@ const scrollToSection = (id, { duration = 1.0, extraGap = 8 } = {}) => {
   const elTop = el.getBoundingClientRect().top + window.pageYOffset;
   const cs = getComputedStyle(el);
   const cssScrollMarginTop =
-    Number.parseInt(
-      cs && (cs.scrollMarginTop || cs.getPropertyValue("scroll-margin-top")) || 0,
-      10
-    ) || 0;
+    Number.parseInt(cs.scrollMarginTop || cs.getPropertyValue("scroll-margin-top") || 0, 10) || 0;
 
-  const targetY = Math.max(
-    Math.round(elTop - navHeight - extraGap - cssScrollMarginTop),
-    0
-  );
+  const targetY = Math.max(Math.round(elTop - navHeight - extraGap - cssScrollMarginTop), 0);
 
-  try {
-    if (window.lenis && typeof window.lenis.scrollTo === "function") {
-      if (prefersReduced) window.scrollTo({ top: targetY, behavior: "auto" });
-      else window.lenis.scrollTo(Math.round(targetY), { duration });
-      return;
-    }
-  } catch (e) {}
+  if (window.lenis?.scrollTo && !prefersReduced) {
+    window.lenis.scrollTo(Math.round(targetY), { duration });
+    return;
+  }
 
-  try {
-    if (typeof el.scrollIntoView === "function") {
-      el.scrollIntoView({
-        behavior: prefersReduced ? "auto" : "smooth",
-        block: "start",
-      });
+  el.scrollIntoView({
+    behavior: prefersReduced ? "auto" : "smooth",
+    block: "start",
+  });
 
-      if (!prefersReduced) {
-        window.setTimeout(() => {
-          window.scrollTo({ top: Math.round(targetY), behavior: "auto" });
-        }, 420);
-      } else {
-        window.scrollTo({ top: Math.round(targetY), behavior: "auto" });
-      }
-      return;
-    }
-  } catch (err) {}
-
-  const behavior = prefersReduced ? "auto" : "smooth";
-  window.scrollTo({ top: Math.round(targetY), behavior });
+  if (!prefersReduced) {
+    setTimeout(() => {
+      window.scrollTo({ top: Math.round(targetY), behavior: "auto" });
+    }, 420);
+  }
 };
 
+/* 🔴 ScrollToTop Button (red theme) */
 const ScrollToTopButton = () => {
   const [visible, setVisible] = useState(false);
 
@@ -148,26 +118,17 @@ const ScrollToTopButton = () => {
     const { duration = 1.0 } = opts;
     const prefersReduced =
       typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
-    try {
-      if (window.lenis && typeof window.lenis.scrollTo === "function") {
-        if (prefersReduced) {
-          window.scrollTo({ top: 0, behavior: "auto" });
-        } else {
-          window.lenis.scrollTo(0, { duration });
-        }
-        return;
-      }
-    } catch (e) {}
-
-    const behavior = prefersReduced ? "auto" : "smooth";
-    window.scrollTo({ top: 0, behavior });
+    if (window.lenis?.scrollTo && !prefersReduced) {
+      window.lenis.scrollTo(0, { duration });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: prefersReduced ? "auto" : "smooth" });
   };
 
   const onKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+    if (["Enter", " ", "Spacebar"].includes(e.key)) {
       e.preventDefault();
       scrollToTop();
     }
@@ -177,7 +138,7 @@ const ScrollToTopButton = () => {
     <button
       aria-label="Scroll to top"
       title="Back to top"
-      className={`scroll-to-top fixed right-6 bottom-6 z-50 transform transition-transform duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500
+      className={`fixed right-6 bottom-6 z-50 flex items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-all duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 hover:bg-red-700 active:scale-90
         ${visible ? "scale-100 opacity-100" : "scale-0 opacity-0 pointer-events-none"}
         md:right-8 md:bottom-8`}
       onClick={() => scrollToTop()}
@@ -185,7 +146,7 @@ const ScrollToTopButton = () => {
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="h-5 w-5"
+        className="h-6 w-6"
         viewBox="0 0 20 20"
         fill="currentColor"
         aria-hidden="true"
@@ -206,19 +167,15 @@ const App = () => {
 
   useEffect(() => {
     let mounted = true;
-
-    const setupScroll = async () => {
+    (async () => {
       try {
         const smoothscroll = await import("smoothscroll-polyfill");
-        if (smoothscroll && smoothscroll.polyfill) smoothscroll.polyfill();
-      } catch (e) {}
-
+        smoothscroll?.polyfill?.();
+      } catch {}
       try {
         initLenis({ duration: 1.0, lerp: 0.075 });
-      } catch (e) {}
-    };
-
-    setupScroll();
+      } catch {}
+    })();
 
     const updateNavHeight = () => {
       const navEl = document.querySelector(".site-nav");
@@ -226,28 +183,19 @@ const App = () => {
       document.documentElement.style.setProperty("--nav-height", `${height}px`);
       document.documentElement.style.setProperty("scroll-padding-top", `${height}px`);
     };
-
     updateNavHeight();
 
-    try {
-      window.scrollToSection = scrollToSection;
-    } catch (e) {}
-
+    window.scrollToSection = scrollToSection;
     window.addEventListener("resize", updateNavHeight);
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        if (mounted) updateNavHeight();
-      });
+
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => mounted && updateNavHeight());
     }
 
     return () => {
       mounted = false;
       window.removeEventListener("resize", updateNavHeight);
-      try {
-        if (window.scrollToSection === scrollToSection) {
-          delete window.scrollToSection;
-        }
-      } catch (e) {}
+      if (window.scrollToSection === scrollToSection) delete window.scrollToSection;
     };
   }, []);
 
@@ -262,7 +210,7 @@ const App = () => {
         <div className="h-[100vh] relative overflow-visible">
           <Menu />
           <About />
-          <button 
+          <button
             type="button"
             aria-label="Scroll to services"
             className="scroll-btn"
@@ -282,10 +230,7 @@ const App = () => {
         </section>
         <Contact />
 
-        <h1 className={`${styles.heroSubText} text-center py-4`}>
-          Made by Kevin Andrews
-        </h1>
-
+        <Footer />
         <ScrollToTopButton />
       </div>
     </>

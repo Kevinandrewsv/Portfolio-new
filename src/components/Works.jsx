@@ -37,12 +37,9 @@ import { styles } from "../style";
 import { projects } from "../constant";
 import { fadeIn, staggerContainer } from "../utils/motion";
 
-// GlowingEffect (kept as you requested)
+// GlowingEffect
 import { GlowingEffect } from "./glowing-effect";
 
-/**
- * WorksSection - shows project cards with stronger visible separation (glow + shadow)
- */
 export default function WorksSection() {
   const [hoveredId, setHoveredId] = useState(null);
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
@@ -179,8 +176,7 @@ const ProjectCard = ({
       return;
     }
 
-    // keep hovered card above other cards but below the site nav (nav uses z-50)
-    el.style.zIndex = "20";
+    el.style.zIndex = "20"; // keep above others
 
     const rect = el.getBoundingClientRect();
     const x = pointer.x - rect.left;
@@ -228,7 +224,7 @@ const ProjectCard = ({
           transformStyle: "preserve-3d",
         }}
       >
-        {/* Keep GlowingEffect (non-interactive) */}
+        {/* Glow */}
         <GlowingEffect
           spread={40}
           glow={true}
@@ -239,7 +235,7 @@ const ProjectCard = ({
           className="pointer-events-none absolute inset-0 rounded-2xl"
         />
 
-        {/* Extra visible glow layers behind the card (two radial layers) */}
+        {/* Extra glow layers */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute -inset-6 rounded-2xl"
@@ -253,7 +249,7 @@ const ProjectCard = ({
           }}
         />
 
-        {/* Card body — strong ambient shadow so it pops */}
+        {/* Card body */}
         <div
           className="relative w-full h-[450px] bg-[#030014] rounded-2xl"
           style={{
@@ -262,10 +258,10 @@ const ProjectCard = ({
               "0 40px 120px rgba(10,10,12,0.75), 0 18px 48px rgba(103,115,222,0.18), 0 8px 24px rgba(235,59,145,0.06)",
           }}
         >
-          {/* subtle gradient overlay (kept as-is) */}
+          {/* gradient overlay */}
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#eb3b91]/[0.12] to-[#6773de]/[0.12] opacity-0 transition-opacity duration-300 pointer-events-none" />
 
-          {/* MAIN CONTENT — fill the rounded container fully (no 1px inset) */}
+          {/* MAIN CONTENT */}
           <div
             className="absolute inset-0 bg-[#030014] rounded-2xl flex flex-col justify-between p-5"
             style={{ transform: "translateZ(20px)" }}
@@ -295,12 +291,16 @@ const ProjectCard = ({
             </div>
           </div>
 
-          {/* Overlay (hover) — keep z low so nav stays click-through */}
+          {/* Overlay (hover) */}
           <div
             className={`absolute inset-0 flex flex-col justify-center items-center gap-4 p-5 bg-black/60 backdrop-blur-sm rounded-2xl transition-opacity duration-200 ${
-              hovered ? "opacity-100 pointer-events-auto z-20" : "opacity-0 pointer-events-none"
+              hovered ? "opacity-100" : "opacity-0"
             }`}
-            style={{ transform: "translateZ(60px)" }}
+            style={{
+              zIndex: 50,
+              transform: "none",
+              pointerEvents: hovered ? "none" : "none", // overlay itself ignores clicks
+            }}
             aria-hidden={!hovered}
           >
             <h3 className="text-white font-bold text-2xl text-center">
@@ -310,14 +310,18 @@ const ProjectCard = ({
               {description}
             </p>
 
-            <div className="mt-4 flex gap-4">
+            {/* Buttons area gets pointer events */}
+            <div
+              className="mt-4 flex gap-4"
+              style={{ pointerEvents: "auto" }}
+            >
               {live_link && (
                 <a
                   href={live_link}
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Live Demo"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#eb3b91] to-[#6773de] hover:from-[#d82c80] hover:to-[#5562d4] transition-all duration-200 transform hover:scale-110 pointer-events-auto"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#eb3b91] to-[#6773de] hover:from-[#d82c80] hover:to-[#5562d4] transition-all duration-200 transform hover:scale-110"
                 >
                   <BsLink45Deg size={24} className="text-white" />
                 </a>
@@ -328,7 +332,7 @@ const ProjectCard = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Client Code"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110 pointer-events-auto"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
                 >
                   <BiCodeAlt size={24} className="text-white" />
                 </a>
@@ -339,7 +343,7 @@ const ProjectCard = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Server Code"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110 pointer-events-auto"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
                 >
                   <TfiServer size={20} className="text-white" />
                 </a>

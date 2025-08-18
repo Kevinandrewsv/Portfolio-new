@@ -193,7 +193,7 @@ const About = () => {
                 <div className="mt-6 flex items-center gap-4">
                   <motion.div variants={fadeIn("right", "spring", 0.7, 1)}>
                     <RainbowButton
-                      href="/Kevin_Andrews_Resume.pdf"
+                      href="./constant/Kevin_Andrews_Resume.pdf"
                       download
                       className="text-white font-semibold rounded-full hover:scale-105 transition-transform h-12 px-6 min-w-[180px]"
                       aria-label="Download Kevin Andrews resume"
