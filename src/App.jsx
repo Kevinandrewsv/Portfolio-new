@@ -225,7 +225,7 @@ const App = () => {
 
         <SplinePage />
         <Works />
-        <section id="contributions" className="pt-16">
+        <section id="contributions" className="pt-20">
           <Contributions />
         </section>
         <Contact />
