@@ -55,6 +55,13 @@ module.exports = {
           "0%": { transform: "translate(0%, 0%)", opacity: "1" },
           "100%": { transform: "translate(100%, 0%)", opacity: "0" },
         },
+
+        /* shimmer / shine keyframes for ShinyText */
+        shine: {
+          // animate the top gradient layer left-to-right across the text
+          "0%": { "background-position": "200% 0, 0 0" },
+          "100%": { "background-position": "-200% 0, 0 0" },
+        },
       },
 
       /* animations */
@@ -68,6 +75,9 @@ module.exports = {
         /* star-movement animations used by StarBorder */
         "star-movement-bottom": "star-movement-bottom linear infinite alternate",
         "star-movement-top": "star-movement-top linear infinite alternate",
+
+        /* shine animation. uses CSS variable --shine-duration (fallback 5s) */
+        shine: "shine var(--shine-duration, 5s) linear infinite",
       },
     },
   },
