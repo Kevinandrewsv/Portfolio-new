@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -6,163 +7,152 @@ import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
 
 /**
  * src/components/Footer.jsx
- * - UI/design unchanged
- * - Navigation behavior: robust section-finder + smooth scroll with header offset fallback
+ * Adjustment: middle handwriting block now spans the footer area (md:inset-y-0)
+ * and uses flex centering so the text is perfectly centered both horizontally and vertically.
+ * Only layout changes for centering; animation/visuals unchanged.
  */
 
 export default function Footer() {
   const reduce = useReducedMotion();
-  const navRef = useRef(null);
-  const [active, setActive] = useState("Home");
 
-  const navItems = [
-    { label: "Home", id: "home" },
-    { label: "Projects", id: "projects" },
-    { label: "Skills", id: "skills" },
-    { label: "Contact", id: "contact" },
-  ];
+  const SVGHandwrite = ({
+    text = '“ Thanks for visiting ! ”',
+    baseDelay = 240,
+    drawDuration = 2000,
+    fillFadeDuration = 360,
+    fontSize = 64,
+  }) => {
+    const svgRef = useRef(null);
+    const textRef = useRef(null);
+    const [pathLen, setPathLen] = useState(0);
+    const [started, setStarted] = useState(false);
+    const [fillVisible, setFillVisible] = useState(reduce);
 
-  // defensive small normalizer for class / attr strings (handles SVGAnimatedString etc.)
-  const normStr = (val) => {
-    if (!val && val !== 0) return "";
-    if (typeof val === "string") return val.toLowerCase();
-    if (val && typeof val === "object") {
-      if (typeof val.baseVal === "string") return val.baseVal.toLowerCase();
-      try {
-        return String(val).toLowerCase();
-      } catch (e) {
-        return "";
-      }
-    }
-    return String(val).toLowerCase();
-  };
-
-  // Find a section element by id or common attributes (same logic as your Menu)
-  const findSectionElement = (id) => {
-    if (!id) return null;
-    const needle = id.toLowerCase();
-
-    const byId = document.getElementById(id);
-    if (byId) return byId;
-
-    const byAttr = document.querySelector(
-      `[data-section="${id}"], [data-nav="${id}"], [aria-label="${id}"], [name="${id}"]`
-    );
-    if (byAttr) return byAttr;
-
-    const containers = Array.from(document.querySelectorAll("section, main, [role='region']"));
-    for (const s of containers) {
-      const idAttr = normStr(s.id);
-      const dataSection = normStr(s.getAttribute && s.getAttribute("data-section"));
-      const aria = normStr(s.getAttribute && s.getAttribute("aria-label"));
-      const name = normStr(s.getAttribute && s.getAttribute("name"));
-      const cls = normStr(s.className || (s.getAttribute && s.getAttribute("class")));
-      if (idAttr === needle || dataSection === needle || aria === needle || name === needle) return s;
-      if (
-        (idAttr && idAttr.includes(needle)) ||
-        (dataSection && dataSection.includes(needle)) ||
-        (aria && aria.includes(needle)) ||
-        (cls && cls.includes(needle))
-      ) {
-        return s;
-      }
-    }
-
-    return null;
-  };
-
-  // Try to read a nav/header height (from CSS var or fallback)
-  const readNavHeight = () => {
-    try {
-      const cssVar = getComputedStyle(document.documentElement).getPropertyValue("--nav-height");
-      const parsed = Number.parseInt(cssVar || "", 10);
-      if (!Number.isNaN(parsed) && parsed > 0) return parsed;
-    } catch (e) {
-      // ignore
-    }
-    // if we can measure the site nav (footer's navRef is used only as a fallback)
-    try {
-      if (navRef.current) return Math.round(navRef.current.getBoundingClientRect().height);
-    } catch (e) {
-      // ignore
-    }
-    // default header height to subtract (tweak if your header is taller)
-    return 80;
-  };
-
-  // Scroll-to logic that respects header offset (reliable fallback)
-  const scrollToElementWithOffset = (el, offset = 0) => {
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const targetY = window.pageYOffset + rect.top - Math.max(0, offset) - 12; // small extra gap
-    window.scrollTo({
-      top: Math.max(0, Math.round(targetY)),
-      behavior: "smooth",
-    });
-  };
-
-  // centralized click handler — uses app-provided window.scrollToSection if available,
-  // otherwise uses the offset-aware fallback above
-  const handleClick = (label, id, e) => {
-    if (e && typeof e.preventDefault === "function") e.preventDefault();
-    setActive(label);
-
-    try {
-      if (typeof window !== "undefined" && typeof window.scrollToSection === "function") {
-        // if app provides a helper, prefer that (it might include offset logic)
-        window.scrollToSection(id);
+    useEffect(() => {
+      if (reduce) {
+        setPathLen(0);
+        setStarted(true);
+        setFillVisible(true);
         return;
       }
-      const el = findSectionElement(id);
-      if (el) {
-        const offset = readNavHeight();
-        scrollToElementWithOffset(el, offset);
-      } else {
-        // fallback: try native scrollIntoView
-        const maybe = document.querySelector(`#${id}`);
-        if (maybe) maybe.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } catch (err) {
-      const el = findSectionElement(id);
-      if (el) {
-        const offset = readNavHeight();
-        scrollToElementWithOffset(el, offset);
-      }
-    }
-  };
 
-  // Active tracking so the footer can highlight the currently visible section
-  useEffect(() => {
-    const ids = navItems.map((i) => i.id || i.label.toLowerCase());
+      const tEl = textRef.current;
+      let len = 0;
+      try {
+        len = tEl && tEl.getComputedTextLength ? tEl.getComputedTextLength() : 0;
+      } catch (e) {
+        len = 0;
+      }
+      if (!len || Number.isNaN(len) || len <= 0) {
+        len = Math.max(1, text.length * (fontSize * 0.6));
+      }
 
-    const updateActive = () => {
-      const navEl = navRef.current;
-      const navHeight = navEl
-        ? Math.round(navEl.getBoundingClientRect().height)
-        : Number.parseInt(getComputedStyle(document.documentElement).getPropertyValue("--nav-height") || "80", 10);
-      const scrollPos = window.scrollY + navHeight + 12;
-      let current = "Home";
-      for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-        const el = findSectionElement(id);
-        if (el) {
-          const top = el.offsetTop || (el.getBoundingClientRect().top + window.pageYOffset);
-          if (scrollPos >= top) current = navItems[i].label;
+      setPathLen(len);
+      setStarted(false);
+      setFillVisible(false);
+
+      const startTimer = window.setTimeout(() => {
+        setStarted(true);
+        const fillTimer = window.setTimeout(() => {
+          setFillVisible(true);
+        }, drawDuration + 80);
+        svgRef.current && (svgRef.current._fillTimer = fillTimer);
+      }, baseDelay);
+
+      return () => {
+        clearTimeout(startTimer);
+        if (svgRef.current && svgRef.current._fillTimer) {
+          clearTimeout(svgRef.current._fillTimer);
         }
-      }
-      setActive((prev) => (prev === current ? prev : current));
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [text, drawDuration, baseDelay, reduce]);
+
+    const strokeStyle = {
+      strokeDasharray: pathLen || 0,
+      strokeDashoffset: started ? 0 : pathLen || 0,
+      transition: reduce ? "none" : `stroke-dashoffset ${drawDuration}ms cubic-bezier(.2,.9,.2,1)`,
+      strokeLinecap: "round",
     };
 
-    window.addEventListener("scroll", updateActive, { passive: true });
-    window.addEventListener("resize", updateActive);
-    // run once on mount
-    updateActive();
-    return () => {
-      window.removeEventListener("scroll", updateActive);
-      window.removeEventListener("resize", updateActive);
+    const fillStyle = {
+      transition: reduce ? "none" : `opacity ${fillFadeDuration}ms ease-in`,
+      opacity: fillVisible ? 1 : 0,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+
+    return (
+      <div
+        className="svg-handwrite-wrapper"
+        style={{ display: "inline-block", transformOrigin: "left center" }}
+      >
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap"
+        />
+
+        <style>{`
+          .svg-handwrite {
+            display: block;
+            overflow: visible;
+            width: 640px;
+            max-width: 78vw;
+          }
+
+          .svg-text {
+            font-family: 'Great Vibes', cursive;
+            font-weight: 400;
+            fill: #ffffff;
+            paint-order: stroke fill markers;
+          }
+
+          .svg-text, .svg-stroke {
+            filter: drop-shadow(0 6px 18px rgba(0,0,0,0.65));
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .svg-stroke { transition: none !important; }
+            .svg-fill { transition: none !important; opacity: 1 !important; }
+          }
+        `}</style>
+
+        <svg
+          ref={svgRef}
+          className="svg-handwrite"
+          viewBox="0 0 900 120"
+          preserveAspectRatio="xMidYMid meet"
+          aria-hidden={false}
+          role="img"
+        >
+          <text
+            ref={textRef}
+            className="svg-text svg-stroke"
+            x="12"
+            y="80"
+            fontSize={fontSize}
+            stroke="#ffffff"
+            strokeWidth={4}
+            fill="none"
+            style={strokeStyle}
+          >
+            {text}
+          </text>
+
+          <text
+            className="svg-text svg-fill"
+            x="12"
+            y="80"
+            fontSize={fontSize}
+            fill="#000000ff"
+            stroke="none"
+            style={fillStyle}
+            aria-hidden={false}
+          >
+            {text}
+          </text>
+        </svg>
+      </div>
+    );
+  };
 
   return (
     <FooterContainer className="bg-transparent">
@@ -170,10 +160,11 @@ export default function Footer() {
         initial={reduce ? {} : { opacity: 0.25, y: 60, scale: 0.98 }}
         whileInView={reduce ? {} : { opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ delay: 0.15, duration: 0.9, ease: "easeInOut" }}
+        transition={{ delay: 0.12, duration: 0.9, ease: "easeInOut" }}
         className="w-full max-w-7xl px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 my-12"
       >
-        <div className="mx-auto flex w-full flex-col items-center gap-6 py-40 md:flex-row md:justify-between md:items-center transform translate-y-20">
+        {/* relative so absolutely-positioned middle block sits inside this area */}
+        <div className="mx-auto relative flex w-full flex-col items-center gap-6 py-40 md:flex-row md:justify-between md:items-center transform translate-y-20">
           <div className="flex flex-col items-center gap-1 text-center md:items-start md:text-left mt-12">
             <span className="text-lg font-bold tracking-tight text-white drop-shadow-[0_6px_18px_rgba(0,0,0,0.75)]">
               Kevin Andrews
@@ -183,25 +174,35 @@ export default function Footer() {
             </span>
           </div>
 
-          {/* Middle: small nav (visual design unchanged) */}
-          <nav ref={navRef} className="flex gap-6 text-sm mt-4" aria-label="Footer navigation">
-            {navItems.map((item) => {
-              const isActive = active === item.label;
-              return (
-                <a
-                  key={item.label}
-                  href={`#${item.id}`}
-                  onClick={(e) => handleClick(item.label, item.id, e)}
-                  aria-current={isActive ? "page" : undefined}
-                  className="rounded px-2 py-1 font-semibold text-white hover:text-slate-300 transition-colors drop-shadow-[0_4px_10px_rgba(0,0,0,0)]"
-                >
-                  {item.label}
-                </a>
-              );
-            })}
-          </nav>
+          {/* CENTERED middle block:
+              - On md+ we absolutely inset the element on both x and y (inset-x-0 + inset-y-0),
+                then use flex centering to guarantee exact center location.
+              - On small screens it remains static (flex layout) and centered naturally.
+          */}
+          <div
+            className="mt-14 flex items-center justify-center md:absolute md:inset-x-0 md:inset-y-0"
+            aria-hidden={false}
+            style={{ pointerEvents: "none" }} // purely visual, avoids accidental overlap
+          >
+            <div className="w-full flex items-center justify-center ml-80">
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: "easeOut" }}
+                style={{ pointerEvents: "auto" }}
+              >
+                <SVGHandwrite
+                  text={'“ Thanks for visiting ! ”'}
+                  baseDelay={240}
+                  drawDuration={2000}
+                  fillFadeDuration={360}
+                  fontSize={64}
+                />
+              </motion.div>
+            </div>
+          </div>
 
-          {/* Right: Connect block (design unchanged) */}
           <div className="flex flex-col items-center md:items-center mt-12">
             <span className="mb-2 text-lg font-semibold text-white drop-shadow-[0_6px_18px_rgba(0,0,0,0.75)]">
               Connect
@@ -252,8 +253,7 @@ export default function Footer() {
 }
 
 /**
- * FooterContainer
- * - Improved frosted panel implementation: border removed
+ * FooterContainer (unchanged)
  */
 export const FooterContainer = ({ children, className }) => {
   return (
@@ -261,7 +261,6 @@ export const FooterContainer = ({ children, className }) => {
       className={cn("relative w-full overflow-hidden z-0", className)}
       style={{ pointerEvents: "auto" }}
     >
-      {/* Background video (full-bleed) */}
       <video
         className="absolute inset-0 -z-10 h-full w-full object-cover"
         style={{ objectPosition: "50% 42%" }}
@@ -275,23 +274,15 @@ export const FooterContainer = ({ children, className }) => {
         <source src="/video/Blackhole.mp4" type="video/mp4" />
       </video>
 
-      {/* Dark overlay (keeps contrast) */}
       <div className="absolute inset-0 -z-11 bg-gradient-to-t from-black/92 via-black/64 to-black/36 pointer-events-none" />
-
-      {/* subtle top fade */}
       <div className="absolute inset-x-0 top-0 h-24 -z-10 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
 
-      {/* -------------------------
-          FROSTED PANEL (NO BORDER)
-          - border removed so no white outline
-          ------------------------- */}
       <div
         className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-full max-w-7xl px-8 pb-8 pointer-events-none"
         aria-hidden="true"
       >
         <div
-          /* border removed here */
-          className="w-full rounded-2xl shadow-inner  backdrop-blur-lg"
+          className="w-full rounded-2xl shadow-inner backdrop-blur-lg"
           style={{
             height: "260px",
             WebkitBackdropFilter: "blur(16px)",
@@ -300,7 +291,6 @@ export const FooterContainer = ({ children, className }) => {
         />
       </div>
 
-      {/* existing glow/lamp (masked to avoid overlapping) */}
       <div
         className="absolute inset-x-0 bottom-0 -z-20 h-44 md:h-56 lg:h-64 pointer-events-none"
         style={{
@@ -308,7 +298,6 @@ export const FooterContainer = ({ children, className }) => {
           maskImage: "linear-gradient(to top, transparent 0%, black 35%)",
         }}
       >
-        {/* left conic */}
         <motion.div
           initial={{ opacity: 0.16, scaleX: 0.95, scaleY: 0.95 }}
           whileInView={{ opacity: 0.42, scaleX: 1, scaleY: 1.02 }}
@@ -321,8 +310,6 @@ export const FooterContainer = ({ children, className }) => {
               "radial-gradient(1100px 380px at 8% 100%, rgba(25,197,255,0.28), rgba(8,10,12,0) 48%)",
           }}
         />
-
-        {/* right conic */}
         <motion.div
           initial={{ opacity: 0.12, scaleX: 0.95 }}
           whileInView={{ opacity: 0.38, scaleX: 1.02 }}
@@ -335,8 +322,6 @@ export const FooterContainer = ({ children, className }) => {
               "radial-gradient(1100px 400px at 92% 100%, rgba(8,200,176,0.22), rgba(8,10,12,0) 48%)",
           }}
         />
-
-        {/* center cyan pool */}
         <motion.div
           initial={{ opacity: 0.18, scale: 0.98 }}
           whileInView={{ opacity: 0.62, scale: 1.03 }}
@@ -351,8 +336,6 @@ export const FooterContainer = ({ children, className }) => {
             maskImage: "linear-gradient(to top, transparent 0%, black 25%)",
           }}
         />
-
-        {/* thin cyan line above the copyright area */}
         <motion.div
           initial={{ width: "22%" }}
           whileInView={{ width: "68%" }}
@@ -363,7 +346,6 @@ export const FooterContainer = ({ children, className }) => {
         />
       </div>
 
-      {/* content wrapper ensures proper z stacking (children sit above the frosted panel) */}
       <div className="relative z-30 flex items-center justify-center py-12 md:py-8">
         {children}
       </div>

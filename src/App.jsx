@@ -11,9 +11,9 @@ import SplinePage from "./components/SplinePage";
 import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
-import Footer from "./components/Footer"; 
+import Footer from "./components/Footer";
 
-import "./index.css"; 
+import "./index.css";
 import { initLenis } from "./lib/lenis";
 
 /* 🔎 robust section finder */
@@ -207,7 +207,8 @@ const App = () => {
       <div className="bg-primary overflow-hidden relative">
         <InteractiveBackground particleCount={28} />
 
-        <div className="h-[100vh] relative overflow-visible">
+        {/* HERO / HOME */}
+        <div id="home" className="h-[100vh] relative overflow-visible">
           <Menu />
           <About />
           <button
@@ -218,17 +219,31 @@ const App = () => {
           />
         </div>
 
+        {/* SERVICES + SKILLS */}
         <div className="pt-10">
-          <Services />
-          <MySkills />
+          {/* wrap services with id so scrollToSection('services') has a direct target */}
+          <section id="services" aria-label="Services">
+            <Services />
+          </section>
+
+          <section id="skills" aria-label="Skills">
+            <MySkills />
+          </section>
         </div>
 
         <SplinePage />
-        <Works />
-        <section id="contributions" className="pt-20">
+
+        <section id="projects" aria-label="Projects">
+          <Works />
+        </section>
+
+        <section id="contributions" className="pt-20" aria-label="Contributions">
           <Contributions />
         </section>
-        <Contact />
+
+        <section id="contact" aria-label="Contact">
+          <Contact />
+        </section>
 
         <Footer />
         <ScrollToTopButton />
