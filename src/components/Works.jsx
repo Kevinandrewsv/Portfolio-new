@@ -11,14 +11,7 @@ import { BiCodeAlt } from "react-icons/bi";
 import { TfiServer } from "react-icons/tfi";
 
 // React-Icons for Technologies
-import {
-  FaReact,
-  FaNodeJs,
-  FaHtml5,
-  FaCss3Alt,
-  FaGitAlt,
-  FaFigma,
-} from "react-icons/fa";
+import { FaReact, FaNodeJs, FaHtml5, FaCss3Alt, FaGitAlt, FaFigma } from "react-icons/fa";
 import {
   SiMongodb,
   SiTailwindcss,
@@ -48,6 +41,7 @@ export default function WorksSection() {
     const handlePointer = (e) => {
       setPointer({ x: e.clientX, y: e.clientY });
 
+      // find the nearest card under pointer
       const elements = document.elementsFromPoint(e.clientX, e.clientY);
       let foundId = null;
       for (let el of elements) {
@@ -165,6 +159,7 @@ const ProjectCard = ({
   server_link,
 }) => {
   const wrapperRef = useRef(null);
+  const overlayRef = useRef(null);
   const tiltTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -172,11 +167,13 @@ const ProjectCard = ({
     if (!el) return;
     if (!hovered) {
       el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+      // reset zIndex when not hovered
       el.style.zIndex = "";
       return;
     }
 
-    el.style.zIndex = "20"; // keep above others
+    // Keep the hovered card above others — high value to avoid stacking surprises
+    el.style.zIndex = "9999";
 
     const rect = el.getBoundingClientRect();
     const x = pointer.x - rect.left;
@@ -217,11 +214,18 @@ const ProjectCard = ({
         tabIndex={0}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        // mouse + touch support
+        onMouseEnter={() => setHoveredId(id)}
+        onMouseLeave={() => setHoveredId(null)}
+        onTouchStart={() => setHoveredId(id)}
+        onTouchEnd={() => setHoveredId(null)}
         role="group"
         aria-label={`Project card ${name}`}
         className="relative rounded-2xl overflow-visible transition-all duration-200 ease-out will-change-transform"
+        // inline zIndex here for extra safety (keeps this card above siblings when hovered)
         style={{
           transformStyle: "preserve-3d",
+          zIndex: hovered ? 9999 : "auto",
         }}
       >
         {/* Glow */}
@@ -293,15 +297,20 @@ const ProjectCard = ({
 
           {/* Overlay (hover) */}
           <div
+            ref={overlayRef}
             className={`absolute inset-0 flex flex-col justify-center items-center gap-4 p-5 bg-black/60 backdrop-blur-sm rounded-2xl transition-opacity duration-200 ${
               hovered ? "opacity-100" : "opacity-0"
             }`}
             style={{
               zIndex: 50,
               transform: "none",
-              pointerEvents: hovered ? "none" : "none", // overlay itself ignores clicks
+              // allow pointer events only when overlay is visible
+              pointerEvents: hovered ? "auto" : "none",
             }}
             aria-hidden={!hovered}
+            // stop propagation so clicks go to anchors reliably
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-white font-bold text-2xl text-center">
               {name}
@@ -311,10 +320,7 @@ const ProjectCard = ({
             </p>
 
             {/* Buttons area gets pointer events */}
-            <div
-              className="mt-4 flex gap-4"
-              style={{ pointerEvents: "auto" }}
-            >
+            <div className="mt-4 flex gap-4" style={{ pointerEvents: "auto" }}>
               {live_link && (
                 <a
                   href={live_link}
@@ -322,6 +328,8 @@ const ProjectCard = ({
                   rel="noopener noreferrer"
                   title="Live Demo"
                   className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#eb3b91] to-[#6773de] hover:from-[#d82c80] hover:to-[#5562d4] transition-all duration-200 transform hover:scale-110"
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
                   <BsLink45Deg size={24} className="text-white" />
                 </a>
@@ -333,6 +341,8 @@ const ProjectCard = ({
                   rel="noopener noreferrer"
                   title="Client Code"
                   className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
                   <BiCodeAlt size={24} className="text-white" />
                 </a>
@@ -344,6 +354,8 @@ const ProjectCard = ({
                   rel="noopener noreferrer"
                   title="Server Code"
                   className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
+                  onClick={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
                   <TfiServer size={20} className="text-white" />
                 </a>
