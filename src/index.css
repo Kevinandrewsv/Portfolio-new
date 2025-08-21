@@ -322,9 +322,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 .scroll-btn:hover { transform: translateX(-50%) translateY(-2px); }
 
-#services {
-  scroll-margin-top: 150px; /* always leave 100px space when scrolled into view */
-}
+
 
 /* add to your global CSS file (not component) */
 @keyframes star-twinkle {
