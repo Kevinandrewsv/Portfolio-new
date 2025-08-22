@@ -1,14 +1,16 @@
-// src/components/About.jsx
-import React, { useEffect, useState, useRef } from "react";
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
 import { styles } from "../style";
 import moment from "moment/moment";
 import { socialLinks } from "../constant";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { IconContext } from "react-icons";
 import { fadeIn, staggerContainer } from "../utils/motion";
 import Typed from "typed.js";
 import { RainbowButton } from "./RainbowButton";
 import { StarBorder } from "./star-border";
+import { FlipWords } from "./ui/flip-words"; // named export
 
 // ✅ Import your resume from assets
 import ResumePDF from "../assets/KevinAndrewsResume.pdf";
@@ -34,20 +36,23 @@ const About = () => {
     "AWS",
   ];
 
-  const skillGradients = {
-    JavaScript: "bg-gradient-to-r from-yellow-400 to-yellow-600",
-    "React.js": "bg-gradient-to-r from-blue-400 to-blue-600",
-    "Next.js": "bg-gradient-to-r from-gray-200 to-gray-400",
-    "Node.js": "bg-gradient-to-r from-green-400 to-green-600",
-    "Express.js": "bg-gradient-to-r from-purple-400 to-purple-600",
-    "Nest.js": "bg-gradient-to-r from-red-400 to-red-600",
-    MongoDB: "bg-gradient-to-r from-green-600 to-green-800",
-    MySQL: "bg-gradient-to-r from-blue-600 to-blue-800",
-    PostgreSQL: "bg-gradient-to-r from-indigo-600 to-indigo-800",
-    AWS: "bg-gradient-to-r from-orange-400 to-orange-600",
+  // Tailwind-like color approximations as explicit CSS gradients (used as inline styles).
+  // These are safe and guaranteed to render via inline background-image + background-clip:text.
+  const skillCssGradients = {
+    JavaScript: "linear-gradient(90deg, #FBBF24 0%, #D97706 100%)", // yellow-400 -> yellow-600
+    "React.js": "linear-gradient(90deg, #60A5FA 0%, #2563EB 100%)", // blue-400 -> blue-600
+    "Next.js": "linear-gradient(90deg, #E5E7EB 0%, #9CA3AF 100%)", // gray-200 -> gray-400
+    "Node.js": "linear-gradient(90deg, #34D399 0%, #16A34A 100%)", // green-400 -> green-600
+    "Express.js": "linear-gradient(90deg, #C084FC 0%, #7C3AED 100%)", // purple-400 -> purple-600
+    "Nest.js": "linear-gradient(90deg, #FB7185 0%, #DC2626 100%)", // red-400 -> red-600
+    MongoDB: "linear-gradient(90deg, #16A34A 0%, #166534 100%)", // green-600 -> green-800
+    MySQL: "linear-gradient(90deg, #2563EB 0%, #1E40AF 100%)", // blue-600 -> blue-800
+    PostgreSQL: "linear-gradient(90deg, #4F46E5 0%, #3730A3 100%)", // indigo-600 -> indigo-800
+    AWS: "linear-gradient(90deg, #FB923C 0%, #F97316 100%)", // orange-400 -> orange-600
   };
 
-  const [skillIdx, setSkillIdx] = useState(0);
+  // Build an array of CSS gradient strings in the same order as skills[]
+  const skillGradientsArray = skills.map((s) => skillCssGradients[s] || "linear-gradient(90deg,#43c7fb,#c438fb)");
 
   const [greetText, greetEmoji] = React.useMemo(() => {
     const parts = greetings.split(" ");
@@ -65,7 +70,8 @@ const About = () => {
     if (!el) return false;
     try {
       const style = window.getComputedStyle(el);
-      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return false;
+      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0")
+        return false;
       const rect = el.getBoundingClientRect();
       if (rect.width === 0 && rect.height === 0) return false;
       return true;
@@ -111,13 +117,6 @@ const About = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setSkillIdx((i) => (i + 1) % skills.length);
-    }, 2850);
-    return () => clearInterval(iv);
-  }, []);
-
   return (
     <motion.section
       id="about"
@@ -154,23 +153,13 @@ const About = () => {
             >
               Full stack Developer in&nbsp;
               <span style={{ position: "relative", display: "inline-block" }}>
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.span
-                    key={skillIdx}
-                    variants={{
-                      initial: { y: 10, opacity: 0, filter: "blur(6px)" },
-                      animate: { y: 0, opacity: 1, filter: "blur(0px)" },
-                      exit: { y: -10, opacity: 0, filter: "blur(6px)" },
-                    }}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className={`whitespace-nowrap inline-block bg-clip-text text-transparent ${skillGradients[skills[skillIdx]]}`}
-                  >
-                    {skills[skillIdx]}
-                  </motion.span>
-                </AnimatePresence>
+                {/* pass explicit CSS gradients (wordGradients) so text is visible for every browser */}
+                <FlipWords
+                  words={skills}
+                  duration={3850}
+                  className="whitespace-nowrap inline-block text-2xl"
+                  wordGradients={skillGradientsArray}
+                />
               </span>
             </motion.p>
 
@@ -240,16 +229,8 @@ const About = () => {
                         strokeWidth="1.4"
                         aria-hidden
                       >
-                        <path
-                          d="M2 7v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M22 7l-10 7L2 7"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
+                        <path d="M2 7v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M22 7l-10 7L2 7" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                       <span>Contact Me</span>
                     </StarBorder>
@@ -264,21 +245,10 @@ const About = () => {
             className="text-indigo-400 opacity-90 space-y-9  w-44 flex-shrink-0 self-start lg:self-center flex flex-col items-end"
           >
             {socialLinks.map((socialLink, idx) => (
-              <motion.div
-                key={idx}
-                variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}
-              >
+              <motion.div key={idx} variants={fadeIn("left", "spring", 0.6 + idx * 0.1, 1)}>
                 <IconContext.Provider value={{ className: "icon-class" }}>
-                  <a
-                    title={socialLink.name}
-                    href={socialLink.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <socialLink.icon
-                      size={25}
-                      className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer"
-                    />
+                  <a title={socialLink.name} href={socialLink.link} target="_blank" rel="noopener noreferrer">
+                    <socialLink.icon size={25} className="hover:-translate-y-1 hover:text-sky-500 duration-200 transition cursor-pointer" />
                   </a>
                 </IconContext.Provider>
               </motion.div>
@@ -290,62 +260,33 @@ const About = () => {
       {/* MOBILE */}
       <div className="lg:hidden">
         <motion.div className="flex flex-col items-center">
-          <motion.div
-            variants={fadeIn("right", "spring", 0.2, 1)}
-            className="w-full max-w-md mx-auto px-4"
-          >
-            <motion.h1
-              variants={fadeIn("right", "tween", 0.3, 1)}
-              className="flex items-center animate-pulse font-semibold mt-2 mb-3 justify-center gap-2 text-sm"
-            >
+          <motion.div variants={fadeIn("right", "spring", 0.2, 1)} className="w-full max-w-md mx-auto px-4">
+            <motion.h1 variants={fadeIn("right", "tween", 0.3, 1)} className="flex items-center animate-pulse font-semibold mt-2 mb-3 justify-center gap-2 text-sm">
               <span className="orange-text-gradient">{`Hi, ${greetText}`}</span>
               <span className="text-white">{greetEmoji}</span>
             </motion.h1>
 
-            <motion.div
-              variants={fadeIn("right", "spring", 0.4, 1)}
-              className="text-center"
-            >
+            <motion.div variants={fadeIn("right", "spring", 0.4, 1)} className="text-center">
               <p className="text-white text-sm">I’m</p>
               <div className="mt-2 flex justify-center items-center gap-3 leading-tight">
-                <span
-                  className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
-                  aria-hidden
-                >
+                <span className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]" aria-hidden>
                   Kevin
                 </span>
-                <span
-                  className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]"
-                  aria-hidden
-                >
+                <span className="inline-block text-4xl sm:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-l from-[#eb3b91] to-[#6773de]" aria-hidden>
                   Andrews
                 </span>
               </div>
             </motion.div>
 
-            <motion.p
-              variants={fadeIn("right", "spring", 0.5, 1)}
-              className="text-white text-center mt-3 text-sm"
-            >
+            <motion.p variants={fadeIn("right", "spring", 0.5, 1)} className="text-white text-center mt-3 text-sm">
               Full stack Developer in&nbsp;
               <span style={{ position: "relative", display: "inline-block" }}>
-                <AnimatePresence initial={false} mode="wait">
-                  <motion.span
-                    key={skillIdx}
-                    variants={{
-                      initial: { y: 8, opacity: 0, filter: "blur(6px)" },
-                      animate: { y: 0, opacity: 1, filter: "blur(0px)" },
-                      exit: { y: -8, opacity: 0, filter: "blur(6px)" },
-                    }}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{ duration: 0.33, ease: "easeInOut" }}
-                    className={`whitespace-nowrap inline-block bg-clip-text text-transparent text-sm ${skillGradients[skills[skillIdx]]}`}
-                  >
-                    {skills[skillIdx]}
-                  </motion.span>
-                </AnimatePresence>
+                <FlipWords
+                  words={skills}
+                  duration={3850}
+                  className="whitespace-nowrap inline-block text-lg"
+                  wordGradients={skillGradientsArray}
+                />
               </span>
             </motion.p>
 
@@ -405,25 +346,9 @@ const About = () => {
                     aria-label="Contact Kevin Andrews"
                     title="Contact Kevin Andrews"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.4"
-                      aria-hidden
-                    >
-                      <path
-                        d="M2 7v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <path
-                        d="M22 7l-10 7L2 7"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+                      <path d="M2 7v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M22 7l-10 7L2 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     <span>Contact Me</span>
                   </StarBorder>
