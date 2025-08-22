@@ -4,11 +4,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 
 /**
  * HandwritingSVG — typing animation (controlled).
- * Minimal, safe fixes:
- *  - no pointer-events blocking
- *  - aria-live for accessibility
- *  - default text color
- *  - slightly higher zIndex for visibility above overlays
+ * zIndex intentionally high so it sits above footer blur panel/video.
  */
 export default function HandwritingSVG({
   text = "“ Thanks for visiting ! ”",
@@ -20,7 +16,7 @@ export default function HandwritingSVG({
   textStyle = {},
   lineClassName = "",
   debug = false,
-  respectReducedMotion = true, // when true, will check prefers-reduced-motion
+  respectReducedMotion = true,
 
   // typing controls
   startControlled = false,
@@ -32,7 +28,6 @@ export default function HandwritingSVG({
   ...props
 }) {
   const lines = useMemo(() => (Array.isArray(text) ? text : [text]), [text]);
-
   const computedFontSize =
     fontSize ?? Math.min(40, Math.max(20, Math.floor(minHeight * 0.45)));
 
@@ -45,22 +40,25 @@ export default function HandwritingSVG({
   useEffect(() => {
     cancelledRef.current = false;
 
-    // respect reduced motion preference (if requested)
-    if (respectReducedMotion) {
+    function checkPrefersReduced() {
       try {
-        const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-        if (mq?.matches) {
-          setDisplayedLines([...lines]);
-          return;
+        const mq = window?.matchMedia?.("(prefers-reduced-motion: reduce)");
+        if (typeof respectReducedMotion === "boolean") {
+          return Boolean(respectReducedMotion) || Boolean(mq?.matches);
         }
-      } catch (e) {
-        // ignore and fallback to normal typing
+        return Boolean(mq?.matches);
+      } catch {
+        return false;
       }
+    }
+
+    if (checkPrefersReduced()) {
+      setDisplayedLines([...lines]);
+      return;
     }
 
     if (startControlled && !start) return;
     if (typing) return;
-
     setTyping(true);
 
     let startTimer = null;
@@ -79,19 +77,16 @@ export default function HandwritingSVG({
           });
           await new Promise((r) => setTimeout(r, typingSpeed));
         }
-        // pause between lines (useful if array of lines)
         await new Promise((r) => setTimeout(r, pauseBetweenLines));
       }
     }
 
     startTimer = setTimeout(runTyping, initialDelay);
-
     return () => {
       cancelledRef.current = true;
       clearTimeout(startTimer);
       setTyping(false);
     };
-    // dependencies intentionally include controls that affect typing start
   }, [
     start,
     startControlled,
@@ -102,7 +97,6 @@ export default function HandwritingSVG({
     respectReducedMotion,
   ]);
 
-  // ensure a visible color by default
   const mergedTextStyle = {
     color: textStyle.color ?? "#fff",
     ...textStyle,
@@ -114,19 +108,17 @@ export default function HandwritingSVG({
     lineHeight: 1.05,
     whiteSpace: "pre-wrap",
     textAlign: "center",
-    // keep other passed styles
     ...mergedTextStyle,
   };
 
-  // zIndex set high to ensure text renders above your footer blur layer
+  // Intentionally high zIndex to ensure this element sits above blur/video
   const wrapperStyle = {
     minHeight,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    // no pointerEvents: leave it interactive so layout/stacking works properly
     position: "relative",
-    zIndex: 60,
+    zIndex: 1100,
   };
 
   return (
@@ -141,7 +133,6 @@ export default function HandwritingSVG({
           : "@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');"}
       </style>
 
-      {/* accessibility: announce typing updates politely */}
       <div
         aria-live="polite"
         role="status"
@@ -160,7 +151,15 @@ export default function HandwritingSVG({
       </div>
 
       {debug && (
-        <div style={{ position: "absolute", top: -18, fontSize: 10, color: "rgba(255,255,255,0.5)" }}>
+        <div
+          style={{
+            position: "absolute",
+            top: -18,
+            fontSize: 10,
+            color: "rgba(255,255,255,0.5)",
+            zIndex: 9999,
+          }}
+        >
           typing: {displayedLines.join(" / ")}
         </div>
       )}

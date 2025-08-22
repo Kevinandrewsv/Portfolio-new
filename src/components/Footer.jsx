@@ -4,10 +4,10 @@ import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "../lib/utils";
 import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
-import HandwritingSVG from "../components/HandwritingSVG";
+import HandwritingSVG from "./HandwritingSVG"; // adjust path if your structure differs
 
 export default function Footer() {
-  const reduced = useReducedMotion();
+  const reduced = useReducedMotion(); // returns true when user prefers reduced motion
   const [started, setStarted] = useState(false);
 
   return (
@@ -32,7 +32,7 @@ export default function Footer() {
             </span>
           </div>
 
-                    <motion.div
+          <motion.div
             onViewportEnter={() => setStarted(true)}
             viewport={{ once: true }}
             className="flex-1 flex items-center justify-center px-4 relative"
@@ -53,10 +53,10 @@ export default function Footer() {
                 WebkitTextStroke: "0.4px rgba(0, 0, 0, 0.28)",
               }}
               debug={false}
-              respectReducedMotion={reduced}  // ← changed here
+              // pass the reduced-motion preference so the component can respect it
+              respectReducedMotion={reduced}
             />
           </motion.div>
-
 
           <div className="flex flex-col items-center md:items-center mt-6 md:mt-0 md:flex-none">
             <span className="mb-2 text-lg font-semibold text-white drop-shadow-[0_6px_18px_rgba(0,0,0,0.75)]">
@@ -111,7 +111,10 @@ export default function Footer() {
 /* FooterContainer — adjusted z-index so children are above blurred panel */
 export const FooterContainer = ({ children, className }) => {
   return (
-    <div className={cn("relative w-full overflow-hidden z-0", className)} style={{ pointerEvents: "auto" }}>
+    <div
+      className={cn("relative w-full overflow-hidden z-0", className)}
+      style={{ pointerEvents: "auto" }}
+    >
       <video
         className="absolute inset-0 -z-10 h-full w-full object-cover"
         style={{ objectPosition: "50% 42%" }}
@@ -128,8 +131,18 @@ export const FooterContainer = ({ children, className }) => {
       <div className="absolute inset-0 -z-11 bg-gradient-to-t from-black/92 via-black/64 to-black/36 pointer-events-none" />
       <div className="absolute inset-x-0 top-0 h-24 -z-10 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
 
-      <div className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-full max-w-7xl px-8 pb-14 pointer-events-none" aria-hidden="true">
-        <div className="w-full rounded-2xl shadow-inner backdrop-blur-lg" style={{ height: "260px", WebkitBackdropFilter: "blur(16px)", backdropFilter: "blur(16px)" }} />
+      <div
+        className="absolute left-1/2 -translate-x-1/2 bottom-0 z-20 w-full max-w-7xl px-8 pb-14 pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          className="w-full rounded-2xl shadow-inner backdrop-blur-lg"
+          style={{
+            height: "260px",
+            WebkitBackdropFilter: "blur(16px)",
+            backdropFilter: "blur(16px)",
+          }}
+        />
       </div>
 
       {/* children area sits above the blur panel */}
