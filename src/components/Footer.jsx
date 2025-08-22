@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "../lib/utils";
-import { FiGithub, FiLinkedin, FiTwitter } from "react-icons/fi";
+import { FiGithub, FiLinkedin, FiInstagram } from "react-icons/fi";
 import HandwritingSVG from "./HandwritingSVG"; // adjust path if your structure differs
 
 export default function Footer() {
@@ -65,7 +65,7 @@ export default function Footer() {
 
             <div className="flex gap-4">
               <a
-                href="#"
+                href="https://github.com/Kevinandrewsv"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="GitHub"
@@ -75,7 +75,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="#"
+                href="https://www.linkedin.com/in/kevinandrewsv/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="LinkedIn"
@@ -85,13 +85,13 @@ export default function Footer() {
               </a>
 
               <a
-                href="#"
+                href="https://www.instagram.com/kevinandrewsv/" // <- replace this with your Instagram URL
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Twitter"
+                aria-label="Instagram"
                 className="group p-2 rounded hover:scale-105 transform transition text-slate-200 hover:text-white drop-shadow-[0_4px_10px_rgba(0,0,0,0.6)]"
               >
-                <FiTwitter className="h-5 w-5" aria-hidden="true" />
+                <FiInstagram className="h-5 w-5" aria-hidden="true" />
               </a>
             </div>
           </div>
