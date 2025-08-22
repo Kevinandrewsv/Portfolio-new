@@ -4,17 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-/**
- * FlipWords (flip-words.jsx)
- *
- * Props:
- * - words: Array<string> | Array<{ text: string, className?: string }>
- * - duration: number (ms)
- * - className: string
- * - wordClasses: optional Array<string> - per-word classes
- * - wordGradients: optional Array<string> - CSS gradient strings per word (e.g. "linear-gradient(...)")
- * - wordStyles: alias for wordGradients
- */
+
 export const FlipWords = ({
   words = [],
   duration = 5000,
