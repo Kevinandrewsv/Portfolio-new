@@ -117,6 +117,26 @@ const About = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // --- NEW: mobile notice state (shows only on mobile)
+  const [showMobileNotice, setShowMobileNotice] = useState(false);
+
+  useEffect(() => {
+    try {
+      const hidden = localStorage.getItem("hideMobileNotice");
+      // default to showing the notice unless user previously dismissed it
+      setShowMobileNotice(hidden !== "1");
+    } catch (e) {
+      setShowMobileNotice(true);
+    }
+  }, []);
+
+  const hideNotice = () => {
+    try {
+      localStorage.setItem("hideMobileNotice", "1");
+    } catch (e) {}
+    setShowMobileNotice(false);
+  };
+
   return (
     <motion.section
       id="about"
@@ -171,7 +191,7 @@ const About = () => {
                     ref={codeElDesktopRef}
                     className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text"
                   />
-                  )&#123;
+                  ){`{`}
                   <br />
                   <span className="bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
                     tryAgain();
@@ -182,16 +202,16 @@ const About = () => {
                     <span className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text">
                       dead
                     </span>
-                    )&#123;
+                    ){`{`}
                   </span>
                   <br />
                   <span className="ml-5 bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
                     break;
                   </span>
                   <br />
-                  &#125;
+                  {`}`}
                   <br />
-                  &#125;
+                  {`}`}
                 </h1>
 
                 <div className="mt-6 flex items-center gap-4">
@@ -266,6 +286,23 @@ const About = () => {
               <span className="text-white">{greetEmoji}</span>
             </motion.h1>
 
+            {/* Mobile-only small tagline / notice */}
+            {showMobileNotice && (
+              <div className="mx-auto mb-3 px-3 py-2 rounded-full bg-yellow-400/8 border border-red-500/30 text-red-200 text-xs flex items-center gap-3 justify-center max-w-[92%]">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 opacity-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.2" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
+                </svg>
+                <span className="text-center">Best viewed on desktop for the full experience</span>
+                <button
+                  onClick={hideNotice}
+                  aria-label="dismiss mobile experience notice"
+                  className="ml-2 -mr-1 p-1 rounded-full hover:bg-white/5"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
             <motion.div variants={fadeIn("right", "spring", 0.4, 1)} className="text-center">
               <p className="text-white text-sm">I’m</p>
               <div className="mt-2 flex justify-center items-center gap-3 leading-tight">
@@ -298,7 +335,7 @@ const About = () => {
                     ref={codeElMobileRef}
                     className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text"
                   />
-                  )&#123;
+                  ){`{`}
                   <br />
                   <span className="bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
                     tryAgain();
@@ -309,16 +346,16 @@ const About = () => {
                     <span className="bg-gradient-to-r from-[#ec008c] to-[#ff2727] text-transparent bg-clip-text">
                       dead
                     </span>
-                    )&#123;
+                    ){`{`}
                   </span>
                   <br />
                   <span className="ml-5 bg-gradient-to-l from-[#43c7fb] to-[#c438fb] text-transparent bg-clip-text">
                     break;
                   </span>
                   <br />
-                  &#125;
+                  {`}`}
                   <br />
-                  &#125;
+                  {`}`}
                 </h1>
               </div>
 
