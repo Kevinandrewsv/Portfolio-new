@@ -1,13 +1,11 @@
 // src/App.jsx
-import React, { useEffect, useState } from "react";
-import InteractiveBackground from "./components/InteractiveBackground";
+import React, { useEffect, useState, lazy, Suspense } from "react";
 import About from "./components/About";
 import Works from "./components/Works";
 import Menu from "./components/Menu";
 import Services from "./components/Services";
 import MySkills from "./components/MySkills";
 import Contributions from "./components/Contributions";
-import SplinePage from "./components/SplinePage";
 import Contact from "./components/Contact";
 import PreLoader from "./components/PreLoader";
 import ScrollProgress from "./components/ScrollProgress";
@@ -16,9 +14,41 @@ import Footer from "./components/Footer";
 import "./index.css";
 import { initLenis } from "./lib/lenis";
 
-/* 🔎 robust section finder */
+/**
+ * Performance-minded App.jsx
+ * - Lazy-loads heavy components (SplinePage, InteractiveBackground)
+ * - Detects low-end devices / prefers-reduced-motion and disables heavy work
+ * - Guards initLenis and other expensive inits
+ * - Provides simple fallbacks shown while lazy components load
+ */
+
+/* -------------------------
+   Lazy (heavy) components
+   ------------------------- */
+const SplinePage = lazy(() => import("./components/SplinePage"));
+const InteractiveBackground = lazy(() => import("./components/InteractiveBackground"));
+
+/* -------------------------
+   Helpers
+   ------------------------- */
+const isReducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const isLowEndDevice = () => {
+  if (typeof navigator === "undefined") return false;
+  // heuristics: low device memory or few cores OR small viewport -> treat as low-end
+  const mem = navigator.deviceMemory || 4;
+  const cores = navigator.hardwareConcurrency || 4;
+  const smallScreen = typeof window !== "undefined" && window.innerWidth <= 768;
+  // conservative threshold: <2GB or <=2 cores (phones and older devices)
+  return mem < 2 || cores <= 2 || smallScreen;
+};
+
+/* 🔎 robust section finder (unchanged logic, safer guards) */
 const findSectionElement = (id) => {
-  if (!id) return null;
+  if (!id || typeof document === "undefined") return null;
   let el = document.getElementById(id);
   if (el) return el;
 
@@ -36,9 +66,10 @@ const findSectionElement = (id) => {
     const idAttr = (s.id || "").toLowerCase();
     const dataSection = (s.getAttribute("data-section") || "").toLowerCase();
     const aria = (s.getAttribute("aria-label") || "").toLowerCase();
-    const cls = typeof s.className === "string"
-      ? s.className.toLowerCase()
-      : (s.getAttribute("class") || "").toLowerCase();
+    const cls =
+      typeof s.className === "string"
+        ? s.className.toLowerCase()
+        : (s.getAttribute("class") || "").toLowerCase();
 
     if (
       idAttr.includes(needle) ||
@@ -52,12 +83,12 @@ const findSectionElement = (id) => {
   return null;
 };
 
-/* 🔎 universal scroll helper */
+/* -------------------------
+   universal scroll helper
+   ------------------------- */
 const scrollToSection = (id, { duration = 1.0, extraGap = 8 } = {}) => {
-  const prefersReduced =
-    typeof window !== "undefined" &&
-    window.matchMedia &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (typeof window === "undefined") return;
+  const prefersReduced = isReducedMotion();
 
   const navHeightRaw =
     getComputedStyle(document.documentElement).getPropertyValue("--nav-height") || "";
@@ -103,11 +134,14 @@ const scrollToSection = (id, { duration = 1.0, extraGap = 8 } = {}) => {
   }
 };
 
-/* 🔴 ScrollToTop Button (red theme) */
+/* -------------------------
+   ScrollToTop Button
+   ------------------------- */
 const ScrollToTopButton = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const onScroll = () => setVisible(window.pageYOffset > 300);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
@@ -116,9 +150,7 @@ const ScrollToTopButton = () => {
 
   const scrollToTop = (opts = {}) => {
     const { duration = 1.0 } = opts;
-    const prefersReduced =
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const prefersReduced = isReducedMotion();
 
     if (window.lenis?.scrollTo && !prefersReduced) {
       window.lenis.scrollTo(0, { duration });
@@ -157,24 +189,46 @@ const ScrollToTopButton = () => {
   );
 };
 
+/* -------------------------
+   App Component
+   ------------------------- */
 const App = () => {
   const [loading, setLoading] = useState(true);
+  // runtime flags
+  const [reducedPerf, setReducedPerf] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
+    const timer = setTimeout(() => setLoading(false), 1200); // shorter preloader for perceived speed
     return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
     let mounted = true;
+
+    // decide if we should reduce heavy work on this device
+    const low = isLowEndDevice() || isReducedMotion();
+    if (mounted) setReducedPerf(low);
+
     (async () => {
+      // load smoothscroll polyfill always (lightweight) so older browsers are fine
       try {
         const smoothscroll = await import("smoothscroll-polyfill");
         smoothscroll?.polyfill?.();
-      } catch {}
+      } catch (e) {
+        // ignore
+      }
+
+      // only init Lenis when device is not low-end and user didn't request reduced motion
       try {
-        initLenis({ duration: 1.0, lerp: 0.075 });
-      } catch {}
+        if (!low) {
+          initLenis({ duration: 1.0, lerp: 0.075 });
+        } else {
+          // Ensure window.lenis is undefined for safety on low devices
+          if (window.lenis) delete window.lenis;
+        }
+      } catch (e) {
+        // fail silently; prefer app to remain usable
+      }
     })();
 
     const updateNavHeight = () => {
@@ -201,11 +255,17 @@ const App = () => {
 
   if (loading) return <PreLoader />;
 
+  // particle count: lower on reducedPerf devices
+  const particleCount = reducedPerf ? 8 : 28;
+
   return (
     <>
       <ScrollProgress />
       <div className="bg-primary overflow-hidden relative">
-        <InteractiveBackground particleCount={28} />
+        {/* InteractiveBackground is lazy-loaded and receives a reduced particleCount on low-end devices */}
+        <Suspense fallback={<div aria-hidden="true" className="pointer-events-none"> </div>}>
+          <InteractiveBackground particleCount={particleCount} />
+        </Suspense>
 
         {/* HERO / HOME */}
         <div id="home" className="h-[100vh] relative overflow-visible">
@@ -221,7 +281,6 @@ const App = () => {
 
         {/* SERVICES + SKILLS */}
         <div className="pt-10">
-          {/* wrap services with id so scrollToSection('services') has a direct target */}
           <section id="services" aria-label="Services">
             <Services />
           </section>
@@ -231,7 +290,18 @@ const App = () => {
           </section>
         </div>
 
-        <SplinePage />
+        {/* SplinePage is lazy-loaded. On reducedPerf devices SplinePage itself should internally render a simplified fallback.
+            If you want, add logic inside components/SplinePage to early-return a static image when it detects reducedPerf (via a prop or global flag). */}
+        <Suspense
+          fallback={
+            <div aria-hidden="true" className="w-full h-[320px] flex items-center justify-center">
+              {/* lightweight placeholder */}
+              <div className="text-sm opacity-70">3D content loading…</div>
+            </div>
+          }
+        >
+          <SplinePage />
+        </Suspense>
 
         <section id="projects" aria-label="Projects">
           <Works />

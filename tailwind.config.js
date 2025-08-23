@@ -1,12 +1,13 @@
 /** @type {import('tailwindcss').Config} */
-const plugin = require('tailwindcss/plugin');
+const plugin = require("tailwindcss/plugin");
 
 module.exports = {
-  content: [
-    './index.html',
-    './src/**/*.{js,jsx,ts,tsx}',
-  ],
-  mode: 'jit',
+  // production-ready content globs
+  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
+
+  // `mode: 'jit'` is not needed for Tailwind v3+
+  darkMode: "class", // optional: use `class`-based dark mode
+
   theme: {
     extend: {
       colors: {
@@ -25,7 +26,7 @@ module.exports = {
         "color-5": "hsl(var(--color-5))",
       },
       fontFamily: {
-        rajdhani: ['saira', 'sans-serif'],
+        rajdhani: ["saira", "sans-serif"],
       },
       boxShadow: {
         card: "0px 35px 120px -15px #211e35",
@@ -81,7 +82,65 @@ module.exports = {
       },
     },
   },
+
+  // Extend variants so animation utilities respond to prefers-reduced-motion
+  variants: {
+    extend: {
+      animation: ["motion-reduce"],
+      transitionDuration: ["motion-reduce"],
+      transform: ["motion-reduce"],
+    },
+  },
+
   plugins: [
-    require('tailwind-scrollbar'),
+    require("tailwind-scrollbar"),
+
+    // Performance helper plugin:
+    // - Adds global selectors that quickly disable or scale back animation/transition/scroll behaviors
+    // - Useful with the `document.documentElement.classList.add('reduced-performance')` pattern used in your App
+    plugin(function ({ addUtilities }) {
+      addUtilities(
+        {
+          /* When <html class="reduced-performance"> is set we:
+             - turn off animations/transitions for children
+             - force scroll-behavior to auto (avoid smooth scrolling CPU cost)
+             - reduce potential background-attachment GPU cost
+          */
+          "html.reduced-performance, html.reduced-performance *": {
+            "animation-duration": "0.001s !important",
+            "animation-delay": "0s !important",
+            "animation-iteration-count": "1 !important",
+            "animation-play-state": "paused !important",
+            transition: "none !important",
+            "scroll-behavior": "auto !important",
+            "background-attachment": "scroll !important",
+            "will-change": "auto !important",
+          },
+
+          /* a utility you can add selectively to root to indicate low-power fallback */
+          ".reduced-performance-fallback": {
+            "pointer-events": "none",
+            "user-select": "none",
+          },
+        },
+        {
+          // generate as-is (these keys are full selectors)
+          variants: ["responsive"],
+        }
+      );
+    }),
+
+    // small helper: create motion-safe / motion-reduce shorthand utilities (optional)
+    plugin(function ({ matchUtilities, theme }) {
+      // Example: use `motion-reduce:animate-none` in markup if needed (Tailwind already supports motion-safe/reduce variants)
+      matchUtilities(
+        {
+          "animate-preserve": (value) => ({
+            animation: value,
+          }),
+        },
+        { values: theme("animation") }
+      );
+    }),
   ],
 };

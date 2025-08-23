@@ -33,23 +33,13 @@ import { fadeIn, staggerContainer } from "../utils/motion";
 // GlowingEffect
 import { GlowingEffect } from "./glowing-effect";
 
-/**
- * Improvements applied:
- * - pointerRef is passed to ProjectCard (no globals).
- * - will-change is toggled only while hovered.
- * - backdrop-blur disabled on small screens and when prefers-reduced-motion.
- * - tilt loop uses a frame-skip (every 2 frames) to reduce CPU load.
- *
- * Visuals and animations are otherwise unchanged.
- */
-
 export default function WorksSection() {
   const [hoveredId, setHoveredId] = useState(null);
 
   // mutable pointer store (no state) — passed down to cards
   const pointerRef = useRef({ x: -1, y: -1 });
 
-  // rAF scheduling flag
+  // rAF scheduling flag (keeps pointer processing cheap)
   const rafScheduled = useRef(false);
 
   // the last id we reported to state (so we only set state when it changes)
@@ -210,7 +200,7 @@ const TechIcon = ({ name }) => {
   );
 };
 
-/* ---------- ProjectCard (optimized tilt loop) ---------- */
+/* ---------- ProjectCard (optimized, single rAF while hovered) ---------- */
 const ProjectCard = ({
   id,
   index,
@@ -230,29 +220,56 @@ const ProjectCard = ({
   const tiltTimeoutRef = useRef(null);
   const rafRef = useRef(null);
   const rectRef = useRef(null);
+  const resizeObserverRef = useRef(null);
 
-  // compute and apply transform inside rAF while hovered
+  // compute rect cheaply with ResizeObserver and update on scroll/resize
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
 
-    const resetTransform = () => {
+    const computeRect = () => {
+      rectRef.current = el.getBoundingClientRect();
+    };
+    computeRect();
+
+    const obs = new ResizeObserver(computeRect);
+    obs.observe(el);
+    resizeObserverRef.current = obs;
+
+    const onScroll = () => computeRect();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+
+    return () => {
+      obs.disconnect();
+      resizeObserverRef.current = null;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  // only run a single rAF loop while this card is hovered (so at most one active rAF)
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+
+    const resetVars = () => {
       try {
-        el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+        el.style.setProperty("--rotX", "0deg");
+        el.style.setProperty("--rotY", "0deg");
         el.style.zIndex = "";
       } catch {}
     };
 
     if (!hovered) {
-      // when not hovered, ensure it's reset
-      resetTransform();
-      if (tiltTimeoutRef.current) {
-        clearTimeout(tiltTimeoutRef.current);
-        tiltTimeoutRef.current = null;
-      }
+      resetVars();
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
+      }
+      if (tiltTimeoutRef.current) {
+        clearTimeout(tiltTimeoutRef.current);
+        tiltTimeoutRef.current = null;
       }
       return;
     }
@@ -260,42 +277,32 @@ const ProjectCard = ({
     // hovered: bring card to front and start rAF loop
     el.style.zIndex = "9999";
 
-    // capture bounding rect once at hover start
-    const computeRect = () => {
-      rectRef.current = el.getBoundingClientRect();
-    };
-    computeRect();
+    // ensure rect is fresh
+    rectRef.current = el.getBoundingClientRect();
 
-    // update rect on resize/scroll (cheap)
-    const onResizeScroll = () => {
-      computeRect();
-    };
-    window.addEventListener("resize", onResizeScroll, { passive: true });
-    window.addEventListener("scroll", onResizeScroll, { passive: true });
-
-    // rAF loop reads pointerRef (set by WorksSection pointer handler)
     let frameCount = 0;
     const loop = () => {
       frameCount++;
-      // update every 2 frames (~30fps) to reduce CPU on lower-end devices
+      // optional frame-skip to ~30fps on heavy devices
       if (frameCount % 2 === 0) {
         const rect = rectRef.current;
         const globalMouse = (pointerRef && pointerRef.current) || null;
 
         if (!rect || !globalMouse) {
-          el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+          el.style.setProperty("--rotX", "0deg");
+          el.style.setProperty("--rotY", "0deg");
         } else {
           const x = globalMouse.x - rect.left;
           const y = globalMouse.y - rect.top;
 
           if (x < 0 || x > rect.width || y < 0 || y > rect.height) {
-            el.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg)";
+            el.style.setProperty("--rotX", "0deg");
+            el.style.setProperty("--rotY", "0deg");
           } else {
             const rotY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
             const rotX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
-            // small lerp to smooth transitions (cheap)
-            // read current transform (if any) and apply target directly — keeping this simple avoids heavy DOM parsing
-            el.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+            el.style.setProperty("--rotX", `${rotX.toFixed(2)}deg`);
+            el.style.setProperty("--rotY", `${rotY.toFixed(2)}deg`);
           }
         }
       }
@@ -303,10 +310,9 @@ const ProjectCard = ({
       rafRef.current = requestAnimationFrame(loop);
     };
 
-    // start the loop
     rafRef.current = requestAnimationFrame(loop);
 
-    // safety: ensure zIndex is cleared shortly after hover ends
+    // safety: clear zIndex after a bit when hover ends
     if (tiltTimeoutRef.current) {
       clearTimeout(tiltTimeoutRef.current);
       tiltTimeoutRef.current = null;
@@ -324,9 +330,7 @@ const ProjectCard = ({
         clearTimeout(tiltTimeoutRef.current);
         tiltTimeoutRef.current = null;
       }
-      window.removeEventListener("resize", onResizeScroll);
-      window.removeEventListener("scroll", onResizeScroll);
-      resetTransform();
+      resetVars();
     };
   }, [hovered, pointerRef]);
 
@@ -334,7 +338,7 @@ const ProjectCard = ({
   const handleFocus = () => setHoveredId(id);
   const handleBlur = () => setHoveredId(null);
 
-  // keep simple enters/leaves for immediate UX
+  // simple enters/leaves for immediate UX
   const handleMouseEnter = () => {
     setHoveredId(id);
   };
@@ -361,6 +365,7 @@ const ProjectCard = ({
         }`}
         style={{
           transformStyle: "preserve-3d",
+          transform: `perspective(1000px) rotateX(var(--rotX, 0deg)) rotateY(var(--rotY, 0deg))`,
           zIndex: hovered ? 9999 : "auto",
         }}
       >
@@ -416,9 +421,7 @@ const ProjectCard = ({
                 />
               </div>
               <h3 className="text-white font-bold text-2xl">{name}</h3>
-              <p className="mt-2 text-gray-400 text-sm line-clamp-2">
-                {description}
-              </p>
+              <p className="mt-2 text-gray-400 text-sm line-clamp-2">{description}</p>
             </div>
 
             <div className="flex flex-wrap gap-4 items-center mt-4">
@@ -446,12 +449,8 @@ const ProjectCard = ({
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white font-bold text-2xl text-center">
-              {name}
-            </h3>
-            <p className="text-gray-300 text-sm max-w-sm text-center">
-              {description}
-            </p>
+            <h3 className="text-white font-bold text-2xl text-center">{name}</h3>
+            <p className="text-gray-300 text-sm max-w-sm text-center">{description}</p>
 
             {/* Buttons area gets pointer events */}
             <div className="mt-4 flex gap-4" style={{ pointerEvents: "auto" }}>

@@ -1,15 +1,18 @@
 /* src/index.css
-   Full updated stylesheet — includes your original rules plus smooth-scroll, accessibility,
-   and small performance tweaks (scroll-padding, stable scrollbar gutter, body.menu-open).
+   Full updated stylesheet with performance fallbacks (html.reduced-performance),
+   accessibility improvements, and small runtime optimizations.
 */
 
-/* Google fonts */
+/* Google fonts (keep as-is or preload critical fonts in index.html for perf) */
 @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Saira:ital,wdth,wght@0,104.8,439;1,104.8,439&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------
+   Global variables & defaults
+   ------------------------- */
 :root {
   --color-1: 0 100% 63%;
   --color-2: 270 100% 63%;
@@ -17,24 +20,45 @@
   --color-4: 195 100% 63%;
   --color-5: 90 100% 63%;
 
-  /* optional: adjust rainbow animation speed globally */
-  --speed: 2s;
+  --speed: 2s;              /* rainbow default */
+  --shine-duration: 5s;     /* shine default */
+  --nav-height: 80px;
+  --page-bg: #000;
+  --font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  --reduced-motion: 0;
+  --glow-blur: 0.6rem;
 }
 
-/* Optional: reduce the intensity of the blurred glow if it's too strong */
-.RainbowButtonGlowAdjuster {
-  /* not required; example usage if you add class to modify blur */
-  --glow-blur: calc(0.6*1rem);
+/* -------------------------
+   Global reduced-performance override
+   - matches the Tailwind plugin and App.jsx flag
+   ------------------------- */
+html.reduced-performance,
+html.reduced-performance * {
+  /* pause animations, remove transitions, force immediate styles */
+  animation-duration: 0.001s !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  animation-play-state: paused !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+  background-attachment: scroll !important;
+  will-change: auto !important;
 }
 
+/* helper class used selectively where you want to disable interaction visually */
+.reduced-performance-fallback {
+  pointer-events: none !important;
+  user-select: none !important;
+}
 
-
-/* Loader: reliable stroke-draw animations */
+/* --------------------------
+   Loader & preloader styles
+   -------------------------- */
 .preloader { background: var(--bkg, #000); color: var(--clr, #fff); }
 
 .loader-wrapper { pointer-events: none; display: flex; gap: 24px; align-items: center; justify-content: center; }
 
-/* Base svg sizing & stroke fallback so shapes are visible even if --clr not set */
 .loader {
   width: 72px;
   height: 72px;
@@ -45,38 +69,34 @@
   width: 100%;
   height: 100%;
   fill: none;
-  stroke: rgba(255,255,255,0.95); /* fallback visible stroke */
+  stroke: rgba(255,255,255,0.95);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
   overflow: visible;
 }
 
-/* --- Circle --- */
-/* circumference (approx) for r=32 -> 2πr ≈ 201; use slightly larger number for dash animation */
+/* circle draw */
 .svg-circle circle {
-  stroke-dasharray: 201;        /* total length of dash pattern */
-  stroke-dashoffset: 201;       /* start fully hidden */
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
   transform-origin: 40px 40px;
   animation: drawCircle 1.6s ease-in-out infinite;
 }
-
-/* Draw/erase loop */
 @keyframes drawCircle {
   0%   { stroke-dashoffset: 201; opacity: 1; }
   45%  { stroke-dashoffset: 0;   opacity: 1; }
-  55%  { stroke-dashoffset: -60; opacity: 1; } /* slight overshoot for nicer loop */
+  55%  { stroke-dashoffset: -60; opacity: 1; }
   100% { stroke-dashoffset: -201; opacity: 0.08; }
 }
 
-/* --- Triangle --- */
+/* triangle draw */
 .loader.triangle polygon {
-  stroke-dasharray: 221;       /* keep your previous length if it matched better */
-  stroke-dashoffset: 221;      /* start hidden */
+  stroke-dasharray: 221;
+  stroke-dashoffset: 221;
   transform-origin: center;
   animation: drawTriangle 1.6s ease-in-out infinite;
 }
-
 @keyframes drawTriangle {
   0%   { stroke-dashoffset: 221; opacity: 1; }
   40%  { stroke-dashoffset: 0;   opacity: 1; }
@@ -84,14 +104,13 @@
   100% { stroke-dashoffset: -221; opacity: 0.08; }
 }
 
-/* --- Rectangle --- */
+/* rect draw */
 .svg-rect rect {
   stroke-dasharray: 256;
   stroke-dashoffset: 256;
   transform-origin: center;
   animation: drawRect 1.6s ease-in-out infinite;
 }
-
 @keyframes drawRect {
   0%   { stroke-dashoffset: 256; opacity: 1; }
   42%  { stroke-dashoffset: 0;   opacity: 1; }
@@ -99,15 +118,13 @@
   100% { stroke-dashoffset: -256; opacity: 0.08; }
 }
 
-/* Slightly larger sizes on bigger screens */
 @media (min-width: 768px) {
   .loader { width: 96px; height: 96px; }
 }
 
-
-
-
-/* --------- Custom utilities & keyframes --------- */
+/* -------------------------
+   Utilities & small helpers
+   ------------------------- */
 @layer utilities {
   @keyframes dash {
     100% { stroke-dashoffset: -400; }
@@ -119,41 +136,22 @@
   }
 }
 
-/* Make GitHub Calendar month labels white */
-.contributions-calendar text {
-  fill: white !important;
-}
+/* make GitHub calendar month labels white */
+.contributions-calendar text { fill: white !important; }
 
-/* Hide all scrollbars for contribution calendar area */
+/* hide scrollbars for contributions area */
 .contrib-calendar,
 .contrib-calendar > div,
-.contrib-calendar > div > div {
-  overflow: hidden !important;
-}
-.contrib-calendar,
-.contrib-calendar * {
+.contrib-calendar > div > div { overflow: hidden !important; }
+.contrib-calendar, .contrib-calendar * {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
-.contrib-calendar *::-webkit-scrollbar {
-  display: none !important;
-}
+.contrib-calendar *::-webkit-scrollbar { display: none !important; }
 
 /* --------------------------
-   Global reset + black bg
+   Global reset + layout
    -------------------------- */
-:root {
-  --nav-height: 80px; /* tune this to your header height */
-  --page-bg: #000;
-  --font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  --reduced-motion: 0;
-}
-
-/* Allow authors to update nav height quickly (also used for scroll-padding-top) */
-@media (min-width: 1024px) {
-  /* If desktop header is taller, update --nav-height in JS or override in another stylesheet */
-}
-
 html, body {
   margin: 0;
   padding: 0;
@@ -168,40 +166,32 @@ html, body {
   scrollbar-color: rgba(255,255,255,0.06) transparent;
 }
 
-/* Stable gutter to avoid layout shift when scrollbars show/hide */
+/* stable scrollbar gutter prevents layout shifts */
 html { scrollbar-gutter: stable; }
 
-/* Smooth-scrolling offset for anchor links and focus navigation */
+/* smooth scrolling offset for anchors */
 html { scroll-padding-top: var(--nav-height); }
 
-/* Hide scrollbar visuals for webkit where desired */
+/* hide webkit scrollbars globally (if you want visible, remove these lines) */
 html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
 
-/* Quick utility toggles for programmatic scrolling */
+/* menu open body lock */
 body.menu-open { overflow: hidden; overscroll-behavior: none; }
 .no-pointer-events-during-scroll * { pointer-events: none !important; }
 
-/* ------------------------------
-   Accessible focus styles
-   - hide mouse/touch focus visuals
-   - show clear ring only for keyboard users
-   ------------------------------ */
+/* --------------------------
+   Accessibility: focus styles
+   -------------------------- */
+:focus { outline: none; box-shadow: none; }
 
-/* remove default outline/box-shadow by default (mouse/touch) */
-:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* show an accessible ring for keyboard users */
 :focus-visible {
   outline: 2px solid rgba(99,102,241,0.9);
   outline-offset: 2px;
 }
 
-/* -------------------------
-   Your existing classes (kept & enhanced)
-   ------------------------- */
+/* --------------------------
+   Existing classes (kept & enhanced)
+   -------------------------- */
 .hash-span {
   margin-top: -100px;
   padding-bottom: 100px;
@@ -209,49 +199,36 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 
 .black-gradient {
-  background: #000000;
-  background: -webkit-linear-gradient(to right, #434343, #000000);
   background: linear-gradient(to right, #434343, #000000);
 }
 
 .violet-gradient {
-  background: #804dee;
   background: linear-gradient(-90deg, #804dee 0%, rgba(60, 51, 80, 0) 100%);
-  background: -webkit-linear-gradient(-90deg, #804dee 0%, rgba(60, 51, 80, 0) 100%);
 }
 
 .green-pink-gradient {
   background: linear-gradient(90.13deg, #029999c8 1.9%, #a33de7 97.5%);
-  background: -webkit-linear-gradient(-90.13deg, #4bd2ffb8 1.9%, #c46bffac 97.5%);
 }
 
 .orange-text-gradient {
-  background: #f12711;
-  background: -webkit-linear-gradient(to top, #f12711, #f5af19);
   background: linear-gradient(to top, #f12711, #f5af19);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .green-text-gradient {
-  background: #11998e;
-  background: -webkit-linear-gradient(to top, #11998e, #38ef7d);
   background: linear-gradient(to top, #11998e, #38ef7d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .blue-text-gradient {
-  background: #56ccf2;
-  background: -webkit-linear-gradient(to top, #2f80ed, #56ccf2);
   background: linear-gradient(to top, #2f80ed, #56ccf2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .pink-text-gradient {
-  background: #ec008c;
-  background: -webkit-linear-gradient(to top, #ec008c, #fc6767);
   background: linear-gradient(to top, #ec008c, #fc6767);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -278,12 +255,14 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   .backdrop-blur-sm { backdrop-filter: blur(12px); }
 }
 
-/* scroll button (hero) */
+/* -------------------------
+   Scroll button (hero)
+   ------------------------- */
 .scroll-btn {
   position: absolute;
   left: 50%;
-  bottom: 2rem; /* distance from bottom of hero */
-  transform: translateX(-50%); /* center horizontally */
+  bottom: 2rem;
+  transform: translateX(-50%);
   height: 40px;
   width: 20px;
   border: 2px solid #62cafd;
@@ -296,8 +275,6 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   display: block;
 }
 
-
- /* arrows inside scroll-btn */
 .scroll-btn::before,
 .scroll-btn::after {
   content: "";
@@ -322,31 +299,24 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 .scroll-btn:hover { transform: translateX(-50%) translateY(-2px); }
 
+/* hide on small screens to avoid overlaying */
+@media (max-width: 768px) {
+  .scroll-btn { display: none !important; pointer-events: none !important; }
+}
 
-
-/* add to your global CSS file (not component) */
+/* --------------------------
+   star twinkle & misc
+   -------------------------- */
 @keyframes star-twinkle {
   0%, 100% { opacity: 0.2; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.2); }
 }
+.star-twinkle { animation: star-twinkle 2s infinite ease-in-out; }
 
-.star-twinkle {
-  animation: star-twinkle 2s infinite ease-in-out;
-}
-
-
-
- /* Hide the hero "scroll down" arrow on small screens to avoid overlaying buttons */
-@media (max-width: 768px) {
-  .scroll-btn {
-    display: none !important;
-    pointer-events: none !important;
-  }
-}
-
-/* ---------------------------
-   Interactive background CSS
-   --------------------------- */
+/* --------------------------
+   Interactive background
+   - optimized for transforms, respects reduced-performance
+   -------------------------- */
 .interactive-bg {
   position: absolute;
   inset: 0;
@@ -359,7 +329,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   will-change: transform, opacity;
 }
 
-/* softer overlay but less blur so content stays crisp */
+/* softer overlay, less blur so content stays crisp */
 .interactive-bg::before {
   content: "";
   position: absolute;
@@ -386,7 +356,7 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   box-shadow: 0 6px 28px rgba(0,0,0,0.25);
 }
 
-/* ripple on click/touch */
+/* ripple effect */
 .interactive-ripple {
   position: absolute;
   transform: translate(-50%, -50%) scale(0);
@@ -397,11 +367,9 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
   mix-blend-mode: screen;
   opacity: 0.9;
 }
-@keyframes rippleAnim {
-  to { transform: translate(-50%, -50%) scale(6); opacity: 0; }
-}
+@keyframes rippleAnim { to { transform: translate(-50%, -50%) scale(6); opacity: 0; } }
 
-/* slow float */
+/* float animation for gentle motion */
 @keyframes slowFloat {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-6px); }
@@ -409,49 +377,31 @@ body.menu-open { overflow: hidden; overscroll-behavior: none; }
 }
 .interactive-bg { animation: slowFloat 12s ease-in-out infinite; }
 
-/* reduce motion for prefers-reduced-motion users */
+/* Respect prefers-reduced-motion (system) */
 @media (prefers-reduced-motion: reduce) {
   .interactive-bg { animation: none !important; }
   .interactive-particle { transition: none !important; animation: none !important; }
   :root { --reduced-motion: 1; }
 }
 
-/* small helper: visible focus ring for keyboard users */
-a:focus-visible, button:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
-
-/* NAV-SPECIFIC FOCUS FIXES
-   - keep nav buttons clean on mouse/touch
-   - show ring for keyboard users (focus-visible)
-   - remove Firefox inner focus border
-   - disable mobile tap highlight for nav
-*/
-.site-nav button,
-.site-nav a {
-  outline: none;
-  box-shadow: none;
+/* Additionally, when the app sets html.reduced-performance we throttle visuals */
+html.reduced-performance .interactive-bg,
+html.reduced-performance .interactive-bg::before {
+  transition: none !important;
+  filter: none !important;
+  opacity: 0.55 !important;
+  animation: none !important;
+}
+html.reduced-performance .interactive-particle {
+  opacity: 0.6 !important;
+  transform: translate3d(0,0,0) !important;
+  box-shadow: none !important;
+  will-change: auto !important;
 }
 
-.site-nav button:focus-visible,
-.site-nav a:focus-visible {
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.14);
-  border-radius: 9999px; /* match rounded pill */
-}
-
-/* Firefox inner focus removal */
-.site-nav button::-moz-focus-inner,
-button::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
-
-/* Disable mobile tap highlight on nav */
-.site-nav, .site-nav * {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Scroll to top button styles (append these to src/index.css) */
-
-/* Scroll to top button base */
+/* --------------------------
+   Scroll-to-top button variants
+   -------------------------- */
 .scroll-to-top {
   display: inline-flex;
   align-items: center;
@@ -468,33 +418,49 @@ button::-moz-focus-inner {
   transition: transform 200ms cubic-bezier(.2,.9,.2,1), opacity 150ms ease;
   will-change: transform, opacity;
 }
+.scroll-to-top:hover { transform: translateY(-4px) scale(1.03); }
+.scroll-to-top:active { transform: translateY(-1px) scale(0.98); }
+.scroll-to-top:focus-visible { outline: none; box-shadow: 0 8px 24px rgba(17,24,39,0.45), 0 0 0 3px rgba(99,102,241,0.12); }
+.scroll-to-top.scale-0 { transform: scale(0); opacity: 0; }
+.scroll-to-top.scale-100 { transform: scale(1); opacity: 1; }
 
-/* Hover / active */
-.scroll-to-top:hover {
-  transform: translateY(-4px) scale(1.03);
+/* --------------------------
+   Rainbow / shine keyframes (kept mild)
+   - use --speed & --shine-duration variables
+   -------------------------- */
+@keyframes rainbow {
+  0% { background-position: 0% }
+  100% { background-position: 200% }
 }
+.rainbow { animation: rainbow var(--speed, 2s) infinite linear; }
 
-.scroll-to-top:active {
-  transform: translateY(-1px) scale(0.98);
+@keyframes shine {
+  0% { background-position: 200% 0, 0 0; }
+  100% { background-position: -200% 0, 0 0; }
 }
+.shine { animation: shine var(--shine-duration, 5s) linear infinite; }
 
-/* Make focus visible for keyboard users */
-.scroll-to-top:focus-visible {
-  outline: none;
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.45), 0 0 0 3px rgba(99, 102, 241, 0.12);
+/* --------------------------
+   Nav-specific fixes + accessibility
+   -------------------------- */
+a:focus-visible, button:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,0.18); border-radius: 6px; }
+
+.site-nav button, .site-nav a { outline: none; box-shadow: none; }
+.site-nav button:focus-visible, .site-nav a:focus-visible {
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.14);
+  border-radius: 9999px;
 }
+.site-nav button::-moz-focus-inner, button::-moz-focus-inner { border: 0; padding: 0; }
+.site-nav, .site-nav * { -webkit-tap-highlight-color: transparent; }
 
-/* When hidden we scale down */
-.scroll-to-top.scale-0 {
-  transform: scale(0);
-  opacity: 0;
-}
-
-/* When visible */
-.scroll-to-top.scale-100 {
-  transform: scale(1);
-  opacity: 1;
-}
-
+/* --------------------------
+   Additional recommendations (comments)
+   --------------------------
+   - To reduce initial paint, consider preloading your most-used font in index.html:
+     <link rel="preload" href="/fonts/saira.woff2" as="font" type="font/woff2" crossorigin>
+   - Consider swapping large PNGs to AVIF/WebP and use <img loading="lazy"> for non-LCP images
+   - Use the 'reduced-performance' HTML flag (document.documentElement.classList.add('reduced-performance'))
+     when low-end heuristics detect limited memory/cores or user preference for reduced motion
+*/
 
 /* End of src/index.css */
