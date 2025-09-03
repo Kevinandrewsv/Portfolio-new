@@ -1,9 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { createContext, useState, useContext, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
+
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 // Icons for Links
 import { BsLink45Deg } from "react-icons/bs";
@@ -30,8 +33,160 @@ import { styles } from "../style";
 import { projects } from "../constant";
 import { fadeIn, staggerContainer } from "../utils/motion";
 
-// GlowingEffect
+// GlowingEffect (unchanged)
 import { GlowingEffect } from "./glowing-effect";
+
+/* ----------------- tiny CN util ----------------- */
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+/* ----------------- Card 3D helpers ----------------- */
+/*
+ These are your CardContainer / CardBody / CardItem implementations (kept
+ behaviorally identical), placed here so everything lives in one file.
+*/
+const MouseEnterContext = createContext(undefined);
+
+export const CardContainer = ({ children, className, containerClassName }) => {
+  const containerRef = useRef(null);
+  const [isMouseEntered, setIsMouseEntered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const { left, top, width, height } = containerRef.current.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / 25;
+    const y = (e.clientY - top - height / 2) / 25;
+    // small local rotation for subtle parallax on overlay — won't touch your main tilt.
+    containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+  };
+
+  const handleMouseEnter = () => {
+    setIsMouseEntered(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!containerRef.current) return;
+    setIsMouseEntered(false);
+    containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
+  };
+
+  return (
+    <MouseEnterContext.Provider value={[isMouseEntered, setIsMouseEntered]}>
+      {/* wrapper adds perspective so translateZ in CardItem is visible */}
+      <div
+        className={cn("w-full h-full", containerClassName)}
+        style={{ perspective: "1200px", WebkitPerspective: "1200px" }}
+      >
+        <div
+          ref={containerRef}
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          className={cn("w-full h-full transition-all duration-200 ease-linear", className)}
+          style={{ transformStyle: "preserve-3d", WebkitTransformStyle: "preserve-3d" }}
+        >
+          {children}
+        </div>
+      </div>
+    </MouseEnterContext.Provider>
+  );
+};
+
+export const CardBody = ({ children, className }) => {
+  return (
+    <div
+      className={cn(
+        // keep preserve-3d for children
+        "w-full h-full [transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+};
+
+/* ----------------- UPDATED CardItem -----------------
+   Now also animates opacity + a subtle slide (enterOffsetY) so
+   inner text (title/desc/buttons) visibly pop on hover.
+   No other behavior changed.
+*/
+export const CardItem = ({
+  as: Tag = "div",
+  children,
+  className,
+  translateX = 0,
+  translateY = 0,
+  translateZ = 0,
+  rotateX = 0,
+  rotateY = 0,
+  rotateZ = 0,
+  enterOffsetY = 8, // slide distance when hidden
+  ...rest
+}) => {
+  const ref = useRef(null);
+  const [isMouseEntered] = useMouseEnter();
+
+  useEffect(() => {
+    handleAnimations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMouseEntered, translateX, translateY, translateZ, rotateX, rotateY, rotateZ]);
+
+  const handleAnimations = () => {
+    if (!ref.current) return;
+
+    const prefersReducedMotion =
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        : false;
+
+    const cleanedZ = prefersReducedMotion ? Math.min(translateZ, 18) : translateZ;
+    const cleanedRX = prefersReducedMotion ? Math.min(rotateX, 6) : rotateX;
+    const cleanedRY = prefersReducedMotion ? Math.min(rotateY, 6) : rotateY;
+
+    if (isMouseEntered) {
+      // show: translateZ (depth), restore opacity and remove slide offset
+      const rotXCalc = `calc(var(--my, 0) * ${cleanedRX}deg)`;
+      const rotYCalc = `calc(var(--mx, 0) * ${cleanedRY}deg)`;
+
+      ref.current.style.transition = "transform 260ms cubic-bezier(.2,.9,.2,1), opacity 220ms ease";
+      ref.current.style.transform = `translate3d(${translateX}px, ${translateY}px, ${cleanedZ}px) rotateX(${rotXCalc}) rotateY(${rotYCalc}) rotateZ(${rotateZ}deg)`;
+      ref.current.style.opacity = "1";
+      ref.current.style.transformStyle = "preserve-3d";
+      ref.current.style.backfaceVisibility = "hidden";
+      ref.current.style.WebkitBackfaceVisibility = "hidden";
+      ref.current.style.willChange = "transform, opacity";
+    } else {
+      // hide: slight downward offset + 0 opacity; keep transform reset simple
+      ref.current.style.transition = "transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease";
+      ref.current.style.opacity = "0";
+      ref.current.style.transform = `translate3d(0px, ${enterOffsetY}px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)`;
+      ref.current.style.willChange = "opacity, transform";
+    }
+  };
+
+  return (
+    <Tag
+      ref={ref}
+      className={cn("w-fit transition duration-200 ease-linear", className)}
+      {...rest}
+    >
+      {children}
+    </Tag>
+  );
+};
+
+// hook
+export const useMouseEnter = () => {
+  const context = useContext(MouseEnterContext);
+  if (context === undefined) {
+    throw new Error("useMouseEnter must be used within a MouseEnterProvider");
+  }
+  return context;
+};
+
+/* ----------------- WorksSection (main) ----------------- */
 
 export default function WorksSection() {
   const [hoveredId, setHoveredId] = useState(null);
@@ -193,11 +348,7 @@ const TechIcon = ({ name }) => {
     postgresql: <SiPostgresql size={size} className={classes} />,
   };
 
-  return (
-    iconMap[mapKey] || (
-      <span className="text-xs font-semibold text-pink-400">#{name}</span>
-    )
-  );
+  return iconMap[mapKey] || <span className="text-xs font-semibold text-pink-400">#{name}</span>;
 };
 
 /* ---------- ProjectCard (optimized, single rAF while hovered) ---------- */
@@ -339,12 +490,8 @@ const ProjectCard = ({
   const handleBlur = () => setHoveredId(null);
 
   // simple enters/leaves for immediate UX
-  const handleMouseEnter = () => {
-    setHoveredId(id);
-  };
-  const handleMouseLeave = () => {
-    setHoveredId(null);
-  };
+  const handleMouseEnter = () => setHoveredId(id);
+  const handleMouseLeave = () => setHoveredId(null);
 
   return (
     <motion.div variants={fadeIn("up", "spring", index * 0.25, 0.8)}>
@@ -409,7 +556,11 @@ const ProjectCard = ({
           {/* MAIN CONTENT */}
           <div
             className="absolute inset-0 bg-[#030014] rounded-2xl flex flex-col justify-between p-5"
-            style={{ transform: "translateZ(20px)" }}
+            style={{
+              transform: "translateZ(16px)",
+              transformStyle: "preserve-3d",
+              WebkitTransformStyle: "preserve-3d",
+            }}
           >
             <div>
               <div className="relative w-full h-[200px] mb-4">
@@ -421,7 +572,7 @@ const ProjectCard = ({
                 />
               </div>
               <h3 className="text-white font-bold text-2xl">{name}</h3>
-              <p className="mt-2 text-gray-400 text-sm line-clamp-2">{description}</p>
+              <p className="mt-2 text-white text-sm line-clamp-2">{description}</p>
             </div>
 
             <div className="flex flex-wrap gap-4 items-center mt-4">
@@ -434,66 +585,89 @@ const ProjectCard = ({
             </div>
           </div>
 
-          {/* Overlay (hover) - blur disabled on small / reduce-motion */}
+          {/* Overlay (hover) - we use CardContainer / CardBody / CardItem here so children pop in 3D */}
           <div
             ref={overlayRef}
-            className={`absolute inset-0 flex flex-col justify-center items-center gap-4 p-5 bg-black/60 backdrop-blur-none md:backdrop-blur-sm motion-reduce:backdrop-blur-none rounded-2xl transition-opacity duration-200 ${
+            className={`absolute inset-0 flex flex-col justify-center items-center gap-4 p-5 bg-black/60 md:backdrop-blur-md motion-reduce:backdrop-blur-none rounded-2xl transition-opacity duration-200 ${
               hovered ? "opacity-100" : "opacity-0"
             }`}
             style={{
               zIndex: 50,
-              transform: "none",
+              // keep overlay itself flat; CardContainer inside will provide perspective for children
+              transform: "translate3d(0,0,0)",
+              transformStyle: "preserve-3d",
+              WebkitTransformStyle: "preserve-3d",
               pointerEvents: hovered ? "auto" : "none",
             }}
             aria-hidden={!hovered}
             onPointerDown={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white font-bold text-2xl text-center">{name}</h3>
-            <p className="text-gray-300 text-sm max-w-sm text-center">{description}</p>
+            {/* CardContainer gives perspective context and toggles isMouseEntered for CardItem */}
+            <CardContainer containerClassName="h-full w-full" className="h-full">
+              <CardBody className="h-full flex flex-col justify-center items-center gap-4 p-5 bg-transparent">
+                <CardItem
+                  as="h3"
+                  translateZ={64}
+                  rotateX={0}
+                  className="text-white font-bold text-2xl text-center"
+                >
+                  {name}
+                </CardItem>
 
-            {/* Buttons area gets pointer events */}
-            <div className="mt-4 flex gap-4" style={{ pointerEvents: "auto" }}>
-              {live_link && (
-                <a
-                  href={live_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Live Demo"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#eb3b91] to-[#6773de] hover:from-[#d82c80] hover:to-[#5562d4] transition-all duration-200 transform hover:scale-110"
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
+                <CardItem
+                  as="p"
+                  translateZ={40}
+                  className="text-gray-300 text-sm max-w-sm text-center"
                 >
-                  <BsLink45Deg size={24} className="text-white" />
-                </a>
-              )}
-              {client_link && (
-                <a
-                  href={client_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Client Code"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                >
-                  <BiCodeAlt size={24} className="text-white" />
-                </a>
-              )}
-              {server_link && (
-                <a
-                  href={server_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Server Code"
-                  className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
-                  onClick={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
-                >
-                  <TfiServer size={20} className="text-white" />
-                </a>
-              )}
-            </div>
+                  {description}
+                </CardItem>
+
+                <div className="mt-4">
+                  <CardItem as="div" translateZ={84} className="flex gap-4 items-center">
+                    {live_link && (
+                      <a
+                        href={live_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Live Demo"
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-[#eb3b91] to-[#6773de] hover:from-[#d82c80] hover:to-[#5562d4] transition-all duration-200 transform hover:scale-110"
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <BsLink45Deg size={24} className="text-white" />
+                      </a>
+                    )}
+                    {client_link && (
+                      <a
+                        href={client_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Client Code"
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <BiCodeAlt size={24} className="text-white" />
+                      </a>
+                    )}
+                    {server_link && (
+                      <a
+                        href={server_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Server Code"
+                        className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-700/80 hover:bg-gray-800/80 transition-all duration-200 transform hover:scale-110"
+                        onClick={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                      >
+                        <TfiServer size={20} className="text-white" />
+                      </a>
+                    )}
+                  </CardItem>
+                </div>
+              </CardBody>
+            </CardContainer>
           </div>
         </div>
       </div>
