@@ -26,6 +26,7 @@ import neuronest from "../assets/projects/Neuronest.png";
 import quickserve from "../assets/projects/quickserve.png";
 import notemakers from "../assets/projects/notes maker.png"; // recommended rename from "notes maker.png"
 import conexa from "../assets/projects/conexa.png";
+import gsapgaming from "../assets/projects/gsapgaming.png";
 
 /* --- Navigation links (keeps in sync with your App.jsx section ids) --- */
 export const navLinks = [
@@ -90,7 +91,7 @@ export const projects = [
   {
     name: "Taskpora",
     description:
-      "Taskpora is a staff and task management platform where teams can efficiently create, assign, and track tasks through an intuitive Kanban-style board with real-time updates. It supports role-based access for administrators, team leads, and staff, facilitating seamless collaboration. Integrated chat allows team members to discuss task progress and share updates instantly. Automated notifications keep everyone informed of changes and deadlines. A comprehensive analytics dashboard provides insights into productivity trends and workload distribution across the organization.",
+      "Taskpora is a staff and task management platform where teams can efficiently create, assign, and track tasks through an intuitive Kanban-style board with real-time updates. It supports role-based access for administrators, team leads, and staff, facilitating seamless collaboration. Integrated chat allows team members to discuss task progress and share updates instantly. A comprehensive analytics dashboard provides insights into productivity trends and workload distribution across the organization.",
     tags: [
       { name: "react", icon: techIconMap.react },
       { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
@@ -108,7 +109,7 @@ export const projects = [
   {
     name: "Doct.",
     description:
-      "Doct is a doctor appointment application for a multi-speciality hospital, enabling patients to browse specialties, view doctor profiles, and schedule appointments. It features Admin, Doctor, and Patient dashboards with role based access to manage calendars, approve bookings, and review medical histories. Email confirmations are sent upon booking. Doctors and administrators oversee appointments, while an analytics dashboard delivers insights into appointment volumes and resource allocation. This streamlined platform enhances overall efficiency and ensures seamless interactions.",
+      "Doct is a doctor appointment application for a multi-speciality hospital, enabling patients to browse specialties, view doctor profiles, and schedule appointments. It features Admin, Doctor, and Patient dashboards with role based access to manage calendars, approve bookings, and review medical histories. Doctors and administrators oversee appointments, while an analytics dashboard delivers insights into appointment volumes and resource allocation.",
     tags: [
       { name: "react", icon: techIconMap.react },
       { name: "nodejs", icon: techIconMap.nodejs },
@@ -155,26 +156,22 @@ export const projects = [
   },
 
   {
-    name: "Conexa",
+    name: "GsapGaming",
     description:
-      "Conexa is a social media platform where users can sign up, customize profiles, and share text, photo, and video posts in a personalized feed. They can follow or befriend others, like and comment on posts, and send private messages in real time. An Admin dashboard offers moderation tools for reviewing content and handling user reports. Email notifications keep users informed of new follows and messages, delivering a streamlined, scalable networking experience.",
+      "GsapGaming is a client-side React showcase styled with Tailwind CSS and driven by GSAP to deliver fast, game-like animations and interactions. It includes a responsive hero with parallax motion and animated game cards (trailers, screenshots, quick demos) featuring “Play Demo” and “Watch Trailer” controls plus interactive stat panels that update in-browser. Additional React Router–powered pages — Games, Leaderboard, Team, and Contact — present media-rich galleries, player profiles, and a simple contact form, all running entirely on the client for instant, immersive experiences.",
     tags: [
       { name: "react", icon: techIconMap.react },
-      { name: "nodejs", icon: techIconMap.nodejs },
-      { name: "express", icon: techIconMap.express },
-      { name: "mongodb", icon: techIconMap.mongodb },
       { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
     ],
-    image: conexa,
-    server_link: "https://github.com/Kevinandrewsv/Conexa/tree/main/server",
-    client_link: "https://github.com/Kevinandrewsv/Conexa/tree/main/client",
-    live_link: "https://conexaforu.vercel.app/",
+    image: gsapgaming,
+    client_link: "https://github.com/Kevinandrewsv/Gsap-recreate",
+    live_link: "https://gsapanimatedclone.vercel.app/",
   },
 
   {
     name: "MindCore",
     description:
-      "MindCore is a client-side React portfolio app styled with Tailwind CSS and animated with Framer Motion that emulates a car service booking site. It offers a responsive hero section, service cards (oil changes, tire rotations, inspections) with “Book Now” buttons, and a client-validated booking form that displays in-browser confirmations. Additional React Router powered pages Gallery, Team, About, and Contact—showcase image grids, staff profiles, and a simple email form, all running entirely in the browser.",
+      "MindCore is a client-side React frontend styled with Tailwind CSS and enhanced with Framer Motion to deliver smooth, conversational animations for an OpenAI-style chat experience. It features a responsive chat interface with threaded message bubbles, model selector, prompt templates, and instant in-browser responses (frontend-only mock powered by local state), plus client-validated input and exportable conversation cards.",
     tags: [
       { name: "react", icon: techIconMap.react },
       { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
