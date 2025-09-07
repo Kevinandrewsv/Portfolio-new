@@ -25,7 +25,7 @@ import mindcore from "../assets/projects/Mindcore.png";
 import neuronest from "../assets/projects/Neuronest.png";
 import quickserve from "../assets/projects/quickserve.png";
 import notemakers from "../assets/projects/notes maker.png"; // recommended rename from "notes maker.png"
-import gsapgaming from "../assets/projects/gsapgaming.png";
+import gsapgaming from "../assets/projects/gsapGaming.png";
 
 /* --- Navigation links (keeps in sync with your App.jsx section ids) --- */
 export const navLinks = [
