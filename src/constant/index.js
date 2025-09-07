@@ -14,9 +14,7 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 
-/* --- Images: adjust names if your files differ --- */
-/* If your file is actually "notes maker.png" either rename it to "notemakers.png"
-   (recommended) or keep the space and update the import path accordingly. */
+
 import taskpora from "../assets/projects/taskpora.png";
 import doct from "../assets/projects/doct.png";
 import zapcart from "../assets/projects/Zapcart.png";
@@ -123,21 +121,6 @@ export const projects = [
   },
 
   {
-    name: "ZapCart",
-    description:
-      "A full stack e-commerce application named ZapCart featuring a Next.js frontend and an Express.js backend. Customers can browse products by category, search items, and view detailed product pages. It includes JWT-based authentication with Customer and Admin dashboards: customers manage carts and profiles, while admins handle product, category, and order management. The checkout flow integrates Stripe for payments and uses Nodemailer for order confirmation emails. MongoDB Atlas stores all data, and Tailwind CSS ensures a responsive UI.",
-    tags: [
-      { name: "nextjs", icon: techIconMap.nextjs },
-      { name: "typescript", icon: techIconMap.typescript },
-      { name: "mongodb", icon: techIconMap.mongodb },
-      { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
-    ],
-    image: zapcart,
-    client_link: "https://github.com/Kevinandrewsv/Zepcart",
-    live_link: "https://zepcart.vercel.app/",
-  },
-
-  {
     name: "Fashionova",
     description:
       "A full-stack fashion shopping web application named Fashionova is designed to offer users a modern online clothing store experience. Customers can explore the latest fashion collections, filter by category or price, and manage their cart and wishlist. The project includes two dashboards—Admin and Customer—secured with JWT-based authentication. Admins can manage product listings, categories, and track orders. The platform integrates Stripe for secure payments, uses Nodemailer for order confirmations, and stores data in MongoDB.",
@@ -153,6 +136,51 @@ export const projects = [
     client_link: "https://github.com/Kevinandrewsv/FashioNova/tree/main/frontend",
     live_link: "https://fashio-nova.vercel.app/",
   },
+  
+    {
+      name: "QuickServe",
+      description:
+        "QuickServe is a food delivery application for a single hotel. Customers browse menu items, add to cart, and schedule delivery times. It features real-time order tracking and customization options. A staff dashboard allows kitchen teams to manage orders, update preparation status, and coordinate deliveries. Automated notifications keep customers informed when meals are prepared and en route. An analytics dashboard provides insights into popular dishes and peak ordering times.",
+      tags: [
+        { name: "react", icon: techIconMap.react },
+        { name: "nodejs", icon: techIconMap.nodejs },
+        { name: "express", icon: techIconMap.express },
+      ],
+      image: quickserve,
+      server_link: "https://github.com/Kevinandrewsv/Quickserve-backend",
+      client_link: "https://github.com/Kevinandrewsv/Quickserve-Frontend",
+      live_link: "https://quickserve-site.netlify.app/",
+    },
+    {
+      name: "Neuronest",
+      description:
+        "Neuronest AI is a demo showcasing six AI utilities in a clean, card based layout. Users can generate full articles, craft catchy blog titles, produce AI-generated images, remove backgrounds or unwanted objects from photos, and receive automated resume reviews all instantly within the interface. Subtle animations and responsive design ensure a polished user experience across desktop and mobile, making Neuronest a compelling example of modern UI architecture, state management, and interactive component design.",
+      tags: [
+        { name: "react", icon: techIconMap.react },
+        { name: "express", icon: techIconMap.express },
+        { name: "postgresql", icon: techIconMap.postgresql },
+        { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
+      ],
+      image: neuronest,
+      server_link: "https://github.com/Kevinandrewsv/NeuroNest.ai/tree/main/server",
+      client_link: "https://github.com/Kevinandrewsv/NeuroNest.ai/tree/main/client",
+      live_link: "https://neuronestai-seven.vercel.app/",
+    },
+  {
+    name: "ZapCart",
+    description:
+      "A full stack e-commerce application named ZapCart featuring a Next.js frontend and an Express.js backend. Customers can browse products by category, search items, and view detailed product pages. It includes JWT-based authentication with Customer and Admin dashboards: customers manage carts and profiles, while admins handle product, category, and order management. The checkout flow integrates Stripe for payments and uses Nodemailer for order confirmation emails. MongoDB Atlas stores all data, and Tailwind CSS ensures a responsive UI.",
+    tags: [
+      { name: "nextjs", icon: techIconMap.nextjs },
+      { name: "typescript", icon: techIconMap.typescript },
+      { name: "mongodb", icon: techIconMap.mongodb },
+      { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
+    ],
+    image: zapcart,
+    client_link: "https://github.com/Kevinandrewsv/Zepcart",
+    live_link: "https://zepcart.vercel.app/",
+  },
+
 
   {
     name: "GsapGaming",
@@ -180,36 +208,6 @@ export const projects = [
     live_link: "https://mindcore-pearl.vercel.app/",
   },
 
-  {
-    name: "Neuronest",
-    description:
-      "Neuronest AI is a demo showcasing six AI utilities in a clean, card based layout. Users can generate full articles, craft catchy blog titles, produce AI-generated images, remove backgrounds or unwanted objects from photos, and receive automated resume reviews all instantly within the interface. Subtle animations and responsive design ensure a polished user experience across desktop and mobile, making Neuronest a compelling example of modern UI architecture, state management, and interactive component design.",
-    tags: [
-      { name: "react", icon: techIconMap.react },
-      { name: "express", icon: techIconMap.express },
-      { name: "postgresql", icon: techIconMap.postgresql },
-      { name: "tailwindcss", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tailwindcss/tailwindcss-plain.svg" },
-    ],
-    image: neuronest,
-    server_link: "https://github.com/Kevinandrewsv/NeuroNest.ai/tree/main/server",
-    client_link: "https://github.com/Kevinandrewsv/NeuroNest.ai/tree/main/client",
-    live_link: "https://neuronestai-seven.vercel.app/",
-  },
-
-  {
-    name: "QuickServe",
-    description:
-      "QuickServe is a food delivery application for a single hotel. Customers browse menu items, add to cart, and schedule delivery times. It features real-time order tracking and customization options. A staff dashboard allows kitchen teams to manage orders, update preparation status, and coordinate deliveries. Automated notifications keep customers informed when meals are prepared and en route. An analytics dashboard provides insights into popular dishes and peak ordering times.",
-    tags: [
-      { name: "react", icon: techIconMap.react },
-      { name: "nodejs", icon: techIconMap.nodejs },
-      { name: "express", icon: techIconMap.express },
-    ],
-    image: quickserve,
-    server_link: "https://github.com/Kevinandrewsv/Quickserve-backend",
-    client_link: "https://github.com/Kevinandrewsv/Quickserve-Frontend",
-    live_link: "https://quickserve-site.netlify.app/",
-  },
 
   {
     name: "Note Makers",
